@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "options.h"
+#include "headers/options.h"
 
 int
 main(int argc, char** argv)

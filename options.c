@@ -3,13 +3,14 @@
 #include <string.h>
 #include <string.h>
 
-#include "options.h"
+#include "headers/options.h"
 
-static void add_command(ArgpState* state);
+static void parse_command(char* cmd_name, Argp* argp, ArgpState* state);
 
 static error_t parse_global_opt(int key, char* arg, ArgpState* state);
 static error_t parse_add_opt(int key, char* arg, ArgpState* state);
 static error_t parse_commit_opt(int key, char* arg, ArgpState* state);
+static error_t parse_init_opt(int key, char* arg, ArgpState* state);
 
 static void log_state(ArgpState* state);
 static char* append_argv0(char* str, char* append);
@@ -58,8 +59,21 @@ Argp commit_argp = {
     commit_doc
 };
 
+/* INIT subcommand */
+static char init_doc[] = "initialize the 9it repo";
+static ArgpOption init_options[] = {
+    {"bare", 'b', 0, 0, "bare grylls"},
+    {0}
+};
+Argp init_argp = {
+    init_options,
+    parse_init_opt,
+    0,
+    init_doc
+};
+
 static void
-add_command(ArgpState* state)
+parse_command(char* cmd_name, Argp* argp, ArgpState* state)
 {
     char* argv0;
     int next;
@@ -72,9 +86,9 @@ add_command(ArgpState* state)
     argv = &state->argv[next-1];
     
     /* change argv[0] to name of subcommand */
-    argv[0] = append_argv0(argv0, "add");
+    argv[0] = append_argv0(argv0, cmd_name);
 
-    argp_parse(&add_argp, argc, argv, ARGP_IN_ORDER, 0, 0);
+    argp_parse(argp, argc, argv, ARGP_IN_ORDER, 0, 0);
 
     /* restore argv[0] */
     free(argv[0]);
@@ -92,11 +106,14 @@ parse_global_opt(int key, char* arg, ArgpState* state)
     switch (key) {
         case ARGP_KEY_ARG:
 
-            if (strcmp(arg, "add") == 0) {
+            if (strcmp(arg, "add") == 0 || strcmp(arg, "stage") == 0) {
                 printf("Add command!\n");
-                add_command(state);
+                parse_command("add", &add_argp, state);
             } else if (strcmp(arg, "commit") == 0) {
                 printf("Commit command!\n");
+            } else if (strcmp(arg, "init") == 0) {
+                printf("Init command!\n");
+                parse_command("init", &init_argp, state);
             } else {
                 argp_error(state, "%s is not a valid command", arg);    
             }
@@ -131,6 +148,19 @@ parse_add_opt(int key, char* arg, ArgpState* state)
 static error_t
 parse_commit_opt(int key, char* arg, ArgpState* state)
 {
+    return 0;
+}
+
+static error_t
+parse_init_opt(int key, char* arg, ArgpState* state)
+{
+    switch (key) {
+        case 'b':
+            printf("init bare repo\n");
+            break;
+        default:
+            return ARGP_ERR_UNKNOWN;
+    }
     return 0;
 }
 
