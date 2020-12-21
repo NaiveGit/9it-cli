@@ -12,5 +12,3 @@ extern Argp add_argp;
 extern Argp commit_argp;
 
 #endif
-
-
