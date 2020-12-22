@@ -9,7 +9,7 @@ objutils.h: objutils.c headers/objutils.h
 	$(CC) -c objutils.c
 
 9it: 9it.c options.o objutils.o
-	$(CC) -lcrypto -o $@ $^
+	$(CC) -lcrypto -lz -o $@ $^
 
 clean:
 	rm 9it

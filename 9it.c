@@ -10,14 +10,13 @@ int
 main(int argc, char** argv)
 {
     
-    /* argp_parse(&global_argp, argc, argv, ARGP_IN_ORDER, 0, 0); */
+    argp_parse(&global_argp, argc, argv, ARGP_IN_ORDER, 0, 0);
 
     int size;
-    unsigned char* hashed = hash_file("README.md", &size);
+    char* hashed = hash_file("README.md", &size);
+    printf("%s\n", hashed);
 
-    for (int i = 0; i < size; i++) {
-        printf("%u\n", hashed[i]);
-    }
+    /* compress_file("9it", "test.gz"); */
 
     free(hashed);
 
