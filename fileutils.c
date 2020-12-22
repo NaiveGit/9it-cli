@@ -8,10 +8,10 @@ init_dot9it(char* root)
     int ind;
     char* dirs[] = {
         "",
-        "/objects",
-        "/refs",
-        "/refs/tags",
-        "/refs/heads",
+        "obj/",
+        "refs/",
+        "refs/tags/",
+        "refs/heads/",
         0
     };
 

@@ -1,4 +1,5 @@
 #include "headers/objutils.h"
+#include "headers/globals.h"
 
 #define READ_CHUNK_SIZE 1024
 
@@ -30,7 +31,7 @@ hash_file(char* file_path, int* hash_length)
 
     /* output */
     SHA1_Final(outbuffer, &ctx); 
-    *hash_length = SHA_DIGEST_LENGTH;
+    *hash_length = 2*SHA_DIGEST_LENGTH+1;
    
     /* convert hex to readable character */ 
     hexstring = malloc(2*SHA_DIGEST_LENGTH*sizeof(char)+1);
@@ -75,4 +76,37 @@ compress_file(char* file_path, char* outname)
     return fsize;
 }
 
+int
+write_blob(char* org_file_path)
+{
+    char* hashed_filename;
+    int hash_length;
+    char* out_path;
+
+    hashed_filename = hash_file(org_file_path, &hash_length);
+
+    out_path = malloc(strlen(OBJ_DIR)+strlen(hashed_filename)+1);
+    memcpy(out_path, OBJ_DIR, strlen(OBJ_DIR)+1);
+    strcat(out_path, hashed_filename);
+    
+    compress_file(org_file_path, out_path);
+    free(hashed_filename);
+    free(out_path);
+
+    return 0;
+}
+
+int
+write_tree(Tree* tree)
+{
+
+    return 0;
+}
+
+int
+write_commit(Commit* commit)
+{
+
+    return 0;
+}
 
