@@ -2,7 +2,7 @@
 #include "headers/fileutils.h"
 
 int 
-init(char* root) 
+init_dot9it(char* root) 
 {
     char* path;
     int ind;
@@ -33,7 +33,7 @@ init(char* root)
 
 int 
 mkfolder(char* root, char* dir_name)
-{
+{ // make this recursive for convience
     char temp[100] = "";
     
     strcat(temp, root);

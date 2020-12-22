@@ -1,9 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <string.h>
 
 #include "headers/options.h"
+#include "headers/fileutils.h"
 
 static void parse_command(char* cmd_name, Argp* argp, ArgpState* state);
 
@@ -21,6 +18,7 @@ static char global_doc[] = "\
 Commands:\n\
     add\n\
     commit\n\
+    init\n\
 ";
 static ArgpOption global_options[] = {
     {0}
@@ -49,7 +47,7 @@ Argp add_argp = {
 /* COMMIT subcommand */
 static char commit_doc[] = "create a commit";
 static ArgpOption commit_options[] = {
-    {"message", 'm', 0, 0, "commit message"},
+    {"message", 'm', "msg", 0, "commit message"},
     {0}
 };
 Argp commit_argp = {
@@ -111,11 +109,13 @@ parse_global_opt(int key, char* arg, ArgpState* state)
                 parse_command("add", &add_argp, state);
             } else if (strcmp(arg, "commit") == 0) {
                 printf("Commit command!\n");
+                parse_command("commit", &commit_argp, state);
             } else if (strcmp(arg, "init") == 0) {
                 printf("Init command!\n");
                 parse_command("init", &init_argp, state);
             } else {
-                argp_error(state, "%s is not a valid command", arg);    
+                /* argp_error(state, "%s is not a valid command", arg); */    
+                argp_usage(state);
             }
 
             break;
@@ -148,16 +148,41 @@ parse_add_opt(int key, char* arg, ArgpState* state)
 static error_t
 parse_commit_opt(int key, char* arg, ArgpState* state)
 {
+    switch (key) {
+        case 'm':
+            printf("Called commit with -m flag with message: %s\n", arg);
+            break;
+        default:
+            return ARGP_ERR_UNKNOWN;
+    }
     return 0;
 }
 
 static error_t
 parse_init_opt(int key, char* arg, ArgpState* state)
 {
+    char* working_dir;
+
     switch (key) {
         case 'b':
-            printf("init bare repo\n");
+            printf("bare\n");
+            // grab current path
+            /* working_dir = getcwd(NULL, 0); */
+            /* init_dot9it(working_dir); // bare is a bit broken rn */
+            /* free(working_dir); */
+
             break;
+
+        case ARGP_KEY_NO_ARGS: // bug rn, this is being called when --bare is passed too
+            printf("not bare\n");
+            /* working_dir = getcwd(NULL, 0); // maybe abstract this to a global var later */
+            /* char* dot9it = "/.9it"; // abstract this out sometime */
+            /* working_dir = realloc(working_dir, strlen(working_dir)+strlen(dot9it)+1); */
+            /* strcat(working_dir, dot9it); */
+            /* init_dot9it(working_dir); */
+            /* free(working_dir); */
+            break;
+
         default:
             return ARGP_ERR_UNKNOWN;
     }

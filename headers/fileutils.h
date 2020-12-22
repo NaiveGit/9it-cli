@@ -12,7 +12,7 @@
 #include <conio.h>
 #endif
 
-extern int init(char* root);
+extern int init_dot9it(char* root);
 extern int mkfolder(char* root, char* dir_name);
 
 #endif
