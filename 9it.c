@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "headers/fileutils.h"
 #include "headers/options.h"
 #include "headers/objutils.h"
 
@@ -12,13 +13,15 @@ main(int argc, char** argv)
     
     argp_parse(&global_argp, argc, argv, ARGP_IN_ORDER, 0, 0);
 
-    int size;
-    char* hashed = hash_file("README.md", &size);
-    printf("%s\n", hashed);
+    /* init("./.9it"); */
 
-    /* compress_file("9it", "test.gz"); */
+    /* int size; */
+    /* char* hashed = hash_file("README.md", &size); */
+    /* printf("%s\n", hashed); */
 
-    free(hashed);
+    /* /1* compress_file("9it", "test.gz"); *1/ */
+
+    /* free(hashed); */
 
     return 0;
 }
