@@ -4,8 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <openssl/sha.h>
-#include <zlib.h>
 
 typedef enum {
     blob,
@@ -32,11 +30,13 @@ typedef struct Commit {
     char* timestamp;
 } Commit;
 
-extern char* hash_file(char* file_path, int* hash_length);
-extern int compress_file(char* file_path, char* outname);
-
-extern int write_blob(char* org_file_path);
+/* objects */
+extern int write_blob(char* file_path);
 extern int write_tree(Tree* tree);
 extern int write_commit(Commit* commit);
+
+/* index */
+extern int init_index(void);
+extern int read_index(void);
 
 #endif

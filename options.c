@@ -181,6 +181,7 @@ parse_init_opt(int key, char* arg, ArgpState* state)
             /* strcat(working_dir, dot9it); */
             /* init_dot9it(working_dir); */
             /* free(working_dir); */
+            init_aux(".9it/");
             break;
 
         default:

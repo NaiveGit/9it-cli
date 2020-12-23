@@ -7,12 +7,19 @@
 #include <stdio.h> 
 #include <stdlib.h> 
 #include <string.h>
+#include <openssl/sha.h>
+#include <zlib.h>
 
 #ifdef _WIN32
 #include <conio.h>
 #endif
 
-extern int init_dot9it(char* root);
+/* init related stuff */
+extern int init_aux(char* root);
 extern int mkfolder(char* root, char* dir_name);
+
+/* utilities */
+extern char* hash_stream(FILE* stream, int* hash_length);
+extern int compress_file(FILE* stream, char* outname);
 
 #endif
