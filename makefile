@@ -9,13 +9,13 @@ globals.o: headers/globals.h
 	$(CC) -c $^
 
 fileutils.o: fileutils.c headers/fileutils.h
-	$(CC) -c $^
+	$(CC) -c fileutils.c
 
 options.o: options.c headers/options.h
-	$(CC) -c $^
+	$(CC) -c options.c
 
 objutils.o: objutils.c headers/objutils.h
-	$(CC) -c $^
+	$(CC) -c objutils.c
 
 9it: 9it.c fileutils.o options.o objutils.o
 	$(CC) -lcrypto -lz -o $@ $^

@@ -13,20 +13,12 @@ main(int argc, char** argv)
 {
 
     /* check if dot dir exists */
+    /* set some global variable to location of dot dir */
     
-
-    /* argp_parse(&global_argp, argc, argv, ARGP_IN_ORDER, 0, 0); */
+    argp_parse(&global_argp, argc, argv, ARGP_IN_ORDER, 0, 0);
 
     /* init_dot9it(DOT_DIR); */ 
     /* write_blob("9it"); */
-
-    /* int size; */
-    /* char* hashed = hash_file("README.md", &size); */
-    /* printf("%s\n", hashed); */
-
-    /* /1* compress_file("9it", "test.gz"); *1/ */
-
-    /* free(hashed); */
 
     return 0;
 }

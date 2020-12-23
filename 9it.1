@@ -1,0 +1,32 @@
+.TH 9IT 1 2020-12-22 9it-0.1
+.SH NAME
+9it \- totally not git!
+.SH SYNOPSIS
+.B 9it 
+<subcommand>
+.SH DESCRIPTION
+9it is a simple version control system written in C.
+.SH OPTIONS
+.TP
+.BR \-\-help
+Displays a list of subcommands.
+.TP
+.B \-\-usage
+.SH SUBCOMMANDS
+.SS add
+Adds files to the index.
+.SS commit
+Commit changes.
+.SS init
+Initialize a new 9it repository.
+.SH FILES/DIRECTORY STRUCTURE
+If 9it was initialized without the bare option, then 9it will create a hidden .9it directory inside the current working directory, which contains all the files required.
+Generally, the user does not need to worry about the contents of this directory, but an explanation is included here nonetheless.
+.TP
+.BR objects/
+.TP
+.BR refs/
+.SH AUTHORS
+9it was written by Daniel Liu and Mark "Zhehai" Zhang.
+.SH REPORTING BUGS
+Please open an issue at https://github.com/NaiveGit/9it-cli

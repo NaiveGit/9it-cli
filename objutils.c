@@ -85,11 +85,13 @@ write_blob(char* org_file_path)
 
     hashed_filename = hash_file(org_file_path, &hash_length);
 
+    /* build the correct out dir */
     out_path = malloc(strlen(OBJ_DIR)+strlen(hashed_filename)+1);
     memcpy(out_path, OBJ_DIR, strlen(OBJ_DIR)+1);
     strcat(out_path, hashed_filename);
-    
     compress_file(org_file_path, out_path);
+
+    /* clean up */
     free(hashed_filename);
     free(out_path);
 
@@ -99,6 +101,7 @@ write_blob(char* org_file_path)
 int
 write_tree(Tree* tree)
 {
+    /* shove everything into hash */
 
     return 0;
 }
