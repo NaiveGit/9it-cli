@@ -30,6 +30,17 @@ typedef struct Commit {
     char* timestamp;
 } Commit;
 
+typedef struct IndexItem {
+    char* hash;
+    char* file_name;
+} IndexItem;
+
+typedef struct Index {
+    int index_length;
+    IndexItem* index_items;
+    char* checksum; // prob dont need?
+} Index;
+
 /* objects */
 extern int write_blob(char* file_path);
 extern int write_tree(Tree* tree);

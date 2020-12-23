@@ -45,13 +45,37 @@ write_tree(Tree* tree)
 int
 write_commit(Commit* commit)
 {
-
     return 0;
 }
 
 int
 init_index(void)
-{
+{ 
+    //prob move this
+    char default_header[] = {
+        'D', 'I', 'R', 'C', //make this better
+         0 ,  0 ,  0 , '\x01',
+         0 ,  0 ,  0 ,  0,
+    };
+    FILE* bufstream;
+    FILE* outstream;
+
+    bufstream = fmemopen(default_header, 12, "rb"); // hard code 12 not good
+    outstream = fopen(INDEX_FILE, "wb");
+    if (bufstream == NULL) {
+        printf("Something went wrong opening the string buffer\n");
+        return -1;
+    }
+    if (outstream == NULL) {
+        printf("Something went wrong opening the index file\n");
+        return -1;
+    }
+    
+    copy_stream(bufstream, outstream); // error check this?
+
+    fclose(bufstream);
+    fclose(outstream);
+
     return 0;
 }
 

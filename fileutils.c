@@ -1,5 +1,6 @@
 
 #include "headers/fileutils.h"
+#include "headers/objutils.h"
 
 #define READ_CHUNK_SIZE 1024
 
@@ -26,6 +27,11 @@ init_aux(char* root)
         }
          
         ind++;
+    }
+
+    /* init index file */
+    if (init_index() == -1) {
+        printf("Error initializing index file.\n");
     }
     
     printf("Successfully initialized 9it in current working directory.\n");
@@ -59,12 +65,29 @@ mkfolder(char* root, char* dir_name)
 }
 
 
+/* all of these functions are very similar, perhaps find a way to abstract */
+int
+copy_stream(FILE* instream, FILE* outstream)
+{
+    size_t rsize;
+    int fsize;
+    char inbuffer[READ_CHUNK_SIZE]; 
+
+    fsize = 0;
+    while ((rsize = fread(inbuffer, 1, READ_CHUNK_SIZE, instream)) > 0) {
+        fsize += rsize;
+        fwrite(inbuffer, 1, rsize, outstream);
+    }
+
+    return rsize;
+}
+
 char*
 hash_stream(FILE* stream, int* hash_length)
 {
     size_t rsize;
     int fsize;
-    char inbuffer[READ_CHUNK_SIZE];
+    char inbuffer[READ_CHUNK_SIZE]; // maybe just use pointer offsets instead
     unsigned char outbuffer[SHA_DIGEST_LENGTH];
     char* hexstring;
     SHA_CTX ctx;
@@ -72,8 +95,8 @@ hash_stream(FILE* stream, int* hash_length)
     SHA1_Init(&ctx);
     fsize = 0;
     while ((rsize = fread(inbuffer, 1, READ_CHUNK_SIZE, stream)) > 0) {
-        fsize += rsize;
         SHA1_Update(&ctx, inbuffer, rsize);
+        fsize += rsize;
     }
 
     /* output */
@@ -106,8 +129,8 @@ compress_file(FILE* stream, char* outname)
 
     fsize = 0;
     while ((rsize = fread(inbuffer, 1, READ_CHUNK_SIZE, stream)) > 0) {
-        fsize += rsize;
         gzwrite(outfile, inbuffer, rsize);
+        fsize += rsize;
     }
 
     gzclose(outfile);

@@ -18,7 +18,8 @@
 extern int init_aux(char* root);
 extern int mkfolder(char* root, char* dir_name);
 
-/* utilities */
+/* utilities - STREAM MUST BE IN BINARY MODE! */
+extern int copy_stream(FILE* instream, FILE* outstream);
 extern char* hash_stream(FILE* stream, int* hash_length);
 extern int compress_file(FILE* stream, char* outname);
 
