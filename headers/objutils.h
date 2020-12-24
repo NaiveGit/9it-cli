@@ -4,6 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+typedef struct stat Stat;
 
 typedef enum {
     blob,
@@ -42,12 +47,14 @@ typedef struct Index {
 } Index;
 
 /* objects */
-extern int write_blob(char* file_path);
-extern int write_tree(Tree* tree);
-extern int write_commit(Commit* commit);
+extern char* write_blob(char* file_path);
+extern char* write_tree(Tree* tree);
+extern char* write_commit(Commit* commit);
 
 /* index */
 extern int init_index(void);
-extern int read_index(void);
+extern Index* read_index(void);
+extern Index* write_index(Index* index);
+extern int add_index_item(char* file_path);
 
 #endif

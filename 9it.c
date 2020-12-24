@@ -19,6 +19,8 @@ main(int argc, char** argv)
 
     /* init_dot9it(DOT_DIR); */ 
     /* write_blob("9it"); */
+    /* Index index = *read_index(); */
+    /* printf("the index has %d items in it\n", index.index_length); */
 
     return 0;
 }
