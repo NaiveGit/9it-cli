@@ -1,7 +1,6 @@
 
 #include "headers/fileutils.h"
 #include "headers/objutils.h"
-
 #define READ_CHUNK_SIZE 1024
 
 int 
@@ -10,9 +9,7 @@ init_aux(char* root)
     char* path;
     int ind;
     char* dirs[] = {
-        "",
         "obj/",
-        "refs/",
         "refs/tags/",
         "refs/heads/",
         0
@@ -41,25 +38,38 @@ init_aux(char* root)
 
 int 
 mkfolder(char* root, char* dir_name)
-{ // make this recursive for convience
+{
+    struct stat sb;//For folder
+    //Full folder path
     char temp[100] = "";
-    
     strcat(temp, root);
     strcat(temp, dir_name);
 
-    #ifdef _WIN32
-    if (_mkdir(temp) != 0) {
-        printf("Error creating directory %s\n", temp);
-        return -1;
-    }
-
-    #else
-    if (mkdir(temp, 0777) == -1) {
-        printf("Error creating directory %s\n", temp);
-        return -1;
-    } 
+    //Begin Recursion
+    char *ptr = strtok(temp,"/");
+    char recur[100] = "";
     
-    #endif
+    while (ptr!=NULL){
+        strcat(recur,ptr);
+        strcat(recur,"/");
+        printf("Folder loc: '%s'\n",recur);
+        printf("'%d'",stat(recur,&sb));
+        if (stat(recur,&sb) != 0){//if folder does not exist, then execute command. Otherwise, skip it.
+            #ifdef _WIN32
+            if (_mkdir(recur) != 0) {
+                printf("Error creating directory %s\n", recur);
+                return -1;
+            }
+
+            #else
+            if (mkdir(recur, 0777) == -1) {
+                printf("Error creating directory %s\n", recur);
+                return -1;
+            } 
+            #endif
+        }
+        ptr = strtok(NULL,"/");
+    }
 
     return 0;
 }
