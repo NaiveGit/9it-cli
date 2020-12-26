@@ -63,7 +63,6 @@ extern char* write_commit(Commit* commit);
 /* index */
 extern int init_index(void);
 extern Index* read_index(void);
-extern Index* write_index(Index* index);
 extern int add_index_item(char* file_path);
 
 #endif

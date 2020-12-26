@@ -21,6 +21,7 @@ main(int argc, char** argv)
     /* write_blob("9it"); */
     /* Index index = *read_index(); */
     /* printf("the index has %d items in it\n", index.index_length); */
+    /* add_index_item("README.md"); */
 
     return 0;
 }
