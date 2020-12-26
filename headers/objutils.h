@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -36,8 +37,16 @@ typedef struct Commit {
 } Commit;
 
 typedef struct IndexItem {
-    char* hash;
-    char* file_name;
+    time_t c_time;
+    time_t m_time;
+    uint32_t dev;
+    uint32_t ino; // truncate the overflow
+    uint32_t mode;
+    uint32_t uid;
+    uint32_t gid;
+    uint32_t file_size;
+    char* hash; // careful with the length of this, prob add an assert
+    char* file_path; // should be null terminated
 } IndexItem;
 
 typedef struct Index {
