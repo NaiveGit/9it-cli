@@ -52,8 +52,8 @@ mkfolder(char* root, char* dir_name)
     while (ptr!=NULL){
         strcat(recur,ptr);
         strcat(recur,"/");
-        printf("Folder loc: '%s'\n",recur);
-        printf("'%d'",stat(recur,&sb));
+        // printf("Folder loc: '%s'\n",recur);
+        // printf("'%d'",stat(recur,&sb));
         if (stat(recur,&sb) != 0){//if folder does not exist, then execute command. Otherwise, skip it.
             #ifdef _WIN32
             if (_mkdir(recur) != 0) {
