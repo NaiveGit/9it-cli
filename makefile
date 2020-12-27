@@ -17,7 +17,10 @@ options.o: options.c headers/options.h
 objutils.o: objutils.c headers/objutils.h
 	$(CC) -c objutils.c
 
-9it: 9it.c fileutils.o options.o objutils.o
+nodeutils.o: nodeutils.c headers/nodeutils.h
+	$(CC) -c nodeutils.c
+
+9it: 9it.c fileutils.o options.o objutils.o nodeutils.o
 	$(CC) -lcrypto -lz -o $@ $^
 
 clean:

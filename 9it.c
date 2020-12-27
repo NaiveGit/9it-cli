@@ -7,6 +7,7 @@
 #include "headers/options.h"
 #include "headers/objutils.h"
 #include "headers/globals.h"
+#include "headers/nodeutils.h"
 
 int
 main(int argc, char** argv)

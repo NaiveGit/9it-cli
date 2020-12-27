@@ -8,6 +8,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+#include "objutils.h"
 /*
 
 tree
@@ -36,9 +38,9 @@ struct Tree {
     // For malloc n stuff
     int cnum;
 
-} Tree;
+};
 
-extern Tree* maketree(Index* index);
+extern Tree* make_tree(Index* index);
 
 
 #endif

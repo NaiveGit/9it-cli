@@ -10,19 +10,19 @@
 #include <unistd.h>
 
 typedef struct stat Stat;
-
+/*
 typedef enum {
     blob,
     tree,
     commit
 } ObjType;
+*/
 
-
-/* temp so i dont crash */
+/* temp so i dont crash 
 typedef struct Tree {
 
 } Tree;
-
+*/
 typedef struct Commit Commit;
 struct Commit {
     Tree* root_tree;
