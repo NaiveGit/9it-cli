@@ -50,10 +50,56 @@ write_blob(char* file_path)
 
 char*
 write_tree(Tree* tree)
-{
-    /* shove everything into hash */
+{ // TODO: make return clean up less cancer
+    char* hexstring;
+    char* out_path;
+    FILE* tree_file;
+    Tree child;
 
-    return NULL;
+    /* NOTE THIS FUNCTION SHOULD BE CALLED ONLY
+     * ON NODES OF TYPE TREE WITH AN NON ZERO 
+     * NUMBER OF CHILDREN, ADD AN ASSERRTION */
+
+    hexstring = hash_to_string(tree->hash);
+
+    /* build out dir */
+    out_path = malloc(strlen(OBJ_DIR)+strlen(hexstring)+1);
+    memcpy(out_path, OBJ_DIR, strlen(OBJ_DIR)+1);
+    strcat(out_path, hexstring);
+
+    /* check if tree exists */
+    if (access(out_path, F_OK) == 0) { // already exists
+        free(out_path);
+        return hexstring;
+    }
+
+    /* write */
+    tree_file = fopen(out_path, "wb"); 
+    if (tree_file == NULL) {
+        free(hexstring);
+        free(out_path);
+        perror(NULL);
+        return NULL;
+    }
+
+    for (int c = 0; c < tree->cnum; c++) {
+
+        child = tree->children[c];
+
+        fwrite(&child.nodeType, NODETYPE_SIZE, 1, tree_file);        
+        for (int i = 0; i < SHA_DIGEST_LENGTH; i++) {
+            fwrite(&child.hash[i], sizeof(unsigned char), 1, tree_file);
+        }
+        fwrite(&child.name, 1, strlen(child.name), tree_file);
+        char null = 0;
+        fwrite(&null, sizeof(char), 1, tree_file);
+    }
+
+    /* clean up */
+    fclose(tree_file);
+    free(out_path);
+
+    return hexstring;
 }
 
 char*

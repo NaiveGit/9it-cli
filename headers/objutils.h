@@ -9,26 +9,22 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#define NODETYPE_SIZE 1
+
 typedef struct stat Stat;
 
 typedef enum {
-    blob,
-    tree
+    NodeType_blob = 0,
+    NodeType_tree = 1
 } NodeType;
 
 typedef struct Tree Tree;
 struct Tree {
-    // Folder: Folder hash
-    // File: Blob hash
-    char* hash;
-    NodeType nodeType; // Type of object
+    unsigned char* hash;
     char* name;
-
-    // Pointers to children 
-    Tree* children; // Nodes
-
-    // For malloc n stuff
+    NodeType nodeType; // Type of object
     int cnum;
+    Tree* children;
 };
 
 typedef struct Commit Commit;

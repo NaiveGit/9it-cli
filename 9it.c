@@ -24,6 +24,21 @@ main(int argc, char** argv)
     /* printf("the index has %d items in it\n", index.index_length); */
     /* add_index_item("README.md"); */
     /* read_index(); */
+    /* Tree root_tree; */
+    /* FILE* root_file; */
+    /* unsigned char* root_hash; */
+
+    /* root_file = fopen("README.md"); */
+    /* root_hash = hash_stream(root_file); */
+    /* fclose(root_file); */
+
+    /* root_tree.hash = root_hash; */
+    /* root_tree.name = "README.md"; */
+    /* root_tree.nodeType = NodeType_blob; */
+    /* root_tree.cnum = 1; */
+
+    
+
 
     return 0;
 }
