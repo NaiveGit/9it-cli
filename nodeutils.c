@@ -1,5 +1,7 @@
+#include "headers/nodeutils.h"
+
 Tree*
-maketree(Index* index)
+make_tree(Index* index)
 {
     Tree root;
     root.nodeType = tree;
@@ -32,10 +34,12 @@ maketree(Index* index)
 }
 
 void
-addto(Tree node,char* ptr, Tree root)
+add_to(Tree node,char* ptr, Tree root)
 {
     if (ptr!=NULL){//If still going to path
-        
+        //Check if folder exists. If it does, then go in.
+
+        //Otherwise, make the folder and go in
 
 
 
@@ -45,9 +49,11 @@ addto(Tree node,char* ptr, Tree root)
     else{//We've reached the end, add the object file here. 
         root.cnum+=1;
         root.children = realloc(root.children,root.cnum);
-        root.children[root.cnum-1] = ;//Figure out what i use
+        root.children[root.cnum-1] = node;//Set it equal
 
     }
 }
-
-
+/*
+int
+find_folder(,Tree root)
+*/

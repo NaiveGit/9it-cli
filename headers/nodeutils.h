@@ -19,14 +19,15 @@ tree
 typedef enum {
     blob,
     tree
-} oType;
+} NodeType;
 
-typedef struct Tree {
+typedef struct Tree Tree;
+struct Tree {
 
     // Folder: Folder hash
     // File: Blob hash
     char* hash;
-    oType nodeType; // Type of object
+    NodeType nodeType; // Type of object
     char* name;
 
     // Pointers to children 
