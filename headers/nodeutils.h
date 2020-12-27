@@ -18,28 +18,6 @@ tree
 
 */
 
-typedef enum {
-    blob,
-    tree
-} NodeType;
-
-typedef struct Tree Tree;
-struct Tree {
-
-    // Folder: Folder hash
-    // File: Blob hash
-    char* hash;
-    NodeType nodeType; // Type of object
-    char* name;
-
-    // Pointers to children 
-    Tree* children; // Nodes
-
-    // For malloc n stuff
-    int cnum;
-
-};
-
 extern Tree* make_tree(Index* index);
 
 

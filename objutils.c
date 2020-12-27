@@ -59,7 +59,14 @@ write_tree(Tree* tree)
 char*
 write_commit(Commit* commit)
 {
-    
+    /* write commit to objects */
+
+
+    /* write all trees and blobs to objects */
+
+
+    /* clear index */    
+
     return NULL;
 }
 

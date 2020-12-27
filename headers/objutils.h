@@ -10,21 +10,30 @@
 #include <unistd.h>
 
 typedef struct stat Stat;
-/*
+
 typedef enum {
     blob,
-    tree,
-    commit
-} ObjType;
-*/
+    tree
+} NodeType;
 
-/* temp so i dont crash 
-typedef struct Tree {
+typedef struct Tree Tree;
+struct Tree {
+    // Folder: Folder hash
+    // File: Blob hash
+    char* hash;
+    NodeType nodeType; // Type of object
+    char* name;
 
-} Tree;
-*/
+    // Pointers to children 
+    Tree* children; // Nodes
+
+    // For malloc n stuff
+    int cnum;
+};
+
 typedef struct Commit Commit;
 struct Commit {
+    unsigned char* hash;
     Tree* root_tree;
     Commit* parent_commit;
     char* author;
@@ -42,7 +51,7 @@ typedef struct IndexItem {
     uint32_t uid;
     uint32_t gid;
     uint32_t file_size;
-    unsigned char* hash; // length of HASH_LENGTH (it's null terminated btw)
+    unsigned char* hash; // length of SHA_DIGEST_LENGTH (not null terminated)
     char* file_path; // should be null terminated
 } IndexItem;
 
@@ -51,6 +60,7 @@ typedef struct Index {
     IndexItem* index_items;
     char* checksum; // prob dont need?
 } Index;
+
 
 /* objects */
 extern char* write_blob(char* file_path);
