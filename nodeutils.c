@@ -1,0 +1,5 @@
+Tree*
+commit(Index* index)
+{
+    
+}
