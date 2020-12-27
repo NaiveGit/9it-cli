@@ -27,7 +27,7 @@ typedef struct Tree {
     // File: Blob hash
     char* hash;
     oType nodeType; // Type of object
-    char* filename;
+    char* name;
 
     // Pointers to children 
     Tree* children; // Nodes
@@ -37,7 +37,7 @@ typedef struct Tree {
 
 } Tree;
 
-extern Tree* commit(Index* index);
+extern Tree* maketree(Index* index);
 
 
 #endif
