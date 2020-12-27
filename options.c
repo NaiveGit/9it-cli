@@ -1,6 +1,7 @@
 
 #include "headers/options.h"
 #include "headers/fileutils.h"
+#include "headers/objutils.h"
 
 static void parse_command(char* cmd_name, Argp* argp, ArgpState* state);
 
@@ -105,13 +106,13 @@ parse_global_opt(int key, char* arg, ArgpState* state)
         case ARGP_KEY_ARG:
 
             if (strcmp(arg, "add") == 0 || strcmp(arg, "stage") == 0) {
-                printf("Add command!\n");
+                /* printf("Add command!\n"); */
                 parse_command("add", &add_argp, state);
             } else if (strcmp(arg, "commit") == 0) {
-                printf("Commit command!\n");
+                /* printf("Commit command!\n"); */
                 parse_command("commit", &commit_argp, state);
             } else if (strcmp(arg, "init") == 0) {
-                printf("Init command!\n");
+                /* printf("Init command!\n"); */
                 parse_command("init", &init_argp, state);
             } else {
                 /* argp_error(state, "%s is not a valid command", arg); */    
@@ -137,7 +138,8 @@ parse_add_opt(int key, char* arg, ArgpState* state)
             printf("Add update option\n");
             break;
         case ARGP_KEY_ARG:
-            printf("File %s\n", arg);
+            /* printf("File %s\n", arg); */
+            add_index_item(arg);
             break;
         default:
             return ARGP_ERR_UNKNOWN;

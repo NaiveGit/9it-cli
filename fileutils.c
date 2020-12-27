@@ -93,7 +93,7 @@ copy_stream(FILE* instream, FILE* outstream)
 }
 
 char*
-hash_stream(FILE* stream, int* hash_length)
+hash_stream(FILE* stream)
 {
     size_t rsize;
     int fsize;
@@ -111,14 +111,13 @@ hash_stream(FILE* stream, int* hash_length)
 
     /* output */
     SHA1_Final(outbuffer, &ctx); 
-    *hash_length = 2*SHA_DIGEST_LENGTH+1;
    
     /* convert hex to readable character */ 
-    hexstring = malloc(2*SHA_DIGEST_LENGTH*sizeof(char)+1);
+    hexstring = malloc(HASH_LENGTH);
     for (int i = 0; i < SHA_DIGEST_LENGTH; i++) {
         sprintf(hexstring+i*2, "%02x", outbuffer[i]);
     }
-    hexstring[2*SHA_DIGEST_LENGTH] = 0;
+    hexstring[HASH_LENGTH-1] = 0;
     
     return hexstring;
 }
@@ -146,4 +145,34 @@ compress_file(FILE* stream, char* outname)
     gzclose(outfile);
 
     return fsize;
+}
+
+char*
+read_until_null(FILE* stream)
+{
+    int rsize;
+    int msize;
+    char* out_str;
+    char rchar;
+
+    rsize = 0;
+    msize = READ_CHUNK_SIZE;
+    out_str = malloc(msize);
+
+    do {
+        if (rsize > msize) {
+            msize += READ_CHUNK_SIZE;
+            out_str = realloc(out_str, msize);
+        }
+
+        if (fread(&rchar, sizeof(char), 1, stream) == 0) { //EOF?
+            break;
+        }
+        
+        out_str[rsize] = rchar;
+        rsize += 1;
+
+    } while (rchar != 0);
+
+    return out_str;
 }

@@ -22,6 +22,7 @@ main(int argc, char** argv)
     /* Index index = *read_index(); */
     /* printf("the index has %d items in it\n", index.index_length); */
     /* add_index_item("README.md"); */
+    /* read_index(); */
 
     return 0;
 }
