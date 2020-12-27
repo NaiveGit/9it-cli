@@ -45,7 +45,7 @@ typedef struct IndexItem {
     uint32_t uid;
     uint32_t gid;
     uint32_t file_size;
-    char* hash; // careful with the length of this, prob add an assert
+    char* hash; // length of HASH_LENGTH (it's null terminated btw)
     char* file_path; // should be null terminated
 } IndexItem;
 

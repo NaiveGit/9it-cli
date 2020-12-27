@@ -108,7 +108,6 @@ read_index(void)
     /* read the header */
     fseek(index_file, INDEX_HEADER_ENTRY_START, SEEK_SET);
     fread(&entry_count, INDEX_HEADER_ENTRY_LENGTH, 1, index_file);
-    index.index_length = entry_count;
 
     index_array = malloc(entry_count*sizeof(IndexItem));
     for (int i = 0; i < entry_count; i++) {
@@ -131,19 +130,21 @@ read_index(void)
 
         index_item.file_path = read_until_null(index_file);       
 
+        /* printf("%s\n", index_item.hash); */
+        /* printf("%s\n", index_item.file_path); */
+
         index_array[i] = index_item;
     }
     fclose(index_file);
 
+    index.index_length = entry_count;
+    index.index_items = index_array;
     /* make a copy of the index struct and return it */
     return_index = malloc(sizeof(Index));
     memcpy(return_index, &index, sizeof(Index));
 
-    index.index_items = index_array;
-
     return return_index;
 }
-
 
 int
 add_index_item(char* file_path)
@@ -164,7 +165,7 @@ add_index_item(char* file_path)
     filepath_stream = fmemopen(file_path, strlen(file_path), "rb");
     hashed_filename = hash_stream(filepath_stream);
 
-    /* build new indexitem struct */
+    /* build new indexitem struct - this is sorta retarded, no need to create the struct, can call write directly */
     new_indexitem.c_time = file_stat.st_ctime; // use the microsecond one
     new_indexitem.m_time = file_stat.st_mtime;
     new_indexitem.dev = file_stat.st_dev;
