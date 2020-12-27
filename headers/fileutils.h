@@ -14,15 +14,14 @@
 #include <conio.h>
 #endif
 
-#define HASH_LENGTH SHA_DIGEST_LENGTH*2+1
-
 /* init related stuff */
 extern int init_aux(char* root);
 extern int mkfolder(char* root, char* dir_name);
 
 /* utilities - STREAM MUST BE IN BINARY MODE! */
 extern int copy_stream(FILE* instream, FILE* outstream);
-extern char* hash_stream(FILE* stream);
+extern unsigned char* hash_stream(FILE* stream);
+extern char* hash_to_string(unsigned char* hash);
 extern int compress_file(FILE* stream, char* outname);
 
 extern char* read_until_null(FILE* stream);

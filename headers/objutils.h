@@ -17,24 +17,21 @@ typedef enum {
     commit
 } ObjType;
 
-typedef struct TreeItem {
-    ObjType type;
-    char* hash;
-    char* file_name;
-} TreeItem;
 
+/* temp so i dont crash */
 typedef struct Tree {
-    TreeItem* items;
+
 } Tree;
 
-typedef struct Commit {
-    char* tree;
-    char* parent_commit;
+typedef struct Commit Commit;
+struct Commit {
+    Tree* root_tree;
+    Commit* parent_commit;
     char* author;
     char* committer;
     char* msg;
     char* timestamp;
-} Commit;
+};
 
 typedef struct IndexItem {
     time_t c_time;
@@ -45,7 +42,7 @@ typedef struct IndexItem {
     uint32_t uid;
     uint32_t gid;
     uint32_t file_size;
-    char* hash; // length of HASH_LENGTH (it's null terminated btw)
+    unsigned char* hash; // length of HASH_LENGTH (it's null terminated btw)
     char* file_path; // should be null terminated
 } IndexItem;
 

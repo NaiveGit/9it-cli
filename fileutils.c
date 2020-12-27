@@ -92,14 +92,14 @@ copy_stream(FILE* instream, FILE* outstream)
     return rsize;
 }
 
-char*
+unsigned char*
 hash_stream(FILE* stream)
 {
     size_t rsize;
     int fsize;
     char inbuffer[READ_CHUNK_SIZE]; // maybe just use pointer offsets instead
     unsigned char outbuffer[SHA_DIGEST_LENGTH];
-    char* hexstring;
+    unsigned char* hexstring;
     SHA_CTX ctx;
 
     SHA1_Init(&ctx);
@@ -111,14 +111,24 @@ hash_stream(FILE* stream)
 
     /* output */
     SHA1_Final(outbuffer, &ctx); 
-   
-    /* convert hex to readable character */ 
-    hexstring = malloc(HASH_LENGTH);
-    for (int i = 0; i < SHA_DIGEST_LENGTH; i++) {
-        sprintf(hexstring+i*2, "%02x", outbuffer[i]);
-    }
-    hexstring[HASH_LENGTH-1] = 0;
+
+    hexstring = malloc(SHA_DIGEST_LENGTH*sizeof(unsigned char));
+    memcpy(hexstring, outbuffer, SHA_DIGEST_LENGTH);
     
+    return hexstring;
+}
+
+char*
+hash_to_string(unsigned char* hash)
+{
+    char* hexstring;
+
+    hexstring = malloc(SHA_DIGEST_LENGTH*2+1); // remember null byte
+    for (int i = 0; i < SHA_DIGEST_LENGTH; i++) {
+        sprintf(hexstring+i*2, "%02x", hash[i]);
+    }
+    hexstring[2*SHA_DIGEST_LENGTH] = 0;
+
     return hexstring;
 }
 
