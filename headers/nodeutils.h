@@ -19,7 +19,6 @@ tree
 
 */
 
-extern Tree* init_tree(Index* index);
+extern Tree* commit_tree(void);
 
-
-#endif
+endif

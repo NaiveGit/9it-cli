@@ -52,11 +52,12 @@ Tree*
 commit_tree(void)
 {
     //First check if head exists
-    if (access(HEAD_FILE,R_OK)){
+    unsigned char recent_commit = get_head_commit();
+    if (NULL != recent_commit){
         // File exists
         Tree* root;
-        root = duplicate_tree(get_head_commit(), "");
-        // LOGIC
+        root = duplicate_tree(recent_commit, "");
+        //  
 
         // LOGIC
     }
@@ -150,6 +151,9 @@ find_folder(Tree* root, char* path)
     }
     return -1;
 }
+
+
+
 
 /*
 // Clean folder: Run this after delete to remove empty folders.
