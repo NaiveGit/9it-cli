@@ -87,12 +87,9 @@ write_tree(Tree* tree)
         child = tree->children[c];
 
         fwrite(&child.nodeType, NODETYPE_SIZE, 1, tree_file);        
-        for (int i = 0; i < SHA_DIGEST_LENGTH; i++) {
-            fwrite(&child.hash[i], sizeof(unsigned char), 1, tree_file);
-        }
+        write_hash(tree_file, child.hash);
         fwrite(&child.name, 1, strlen(child.name), tree_file);
-        char null = 0;
-        fwrite(&null, sizeof(char), 1, tree_file);
+        write_null(tree_file);
     }
 
     /* clean up */
@@ -104,14 +101,87 @@ write_tree(Tree* tree)
 
 char*
 write_commit(Commit* commit)
+{ /* writes commit to objects  */
+    
+    char* hexstring;
+    char* out_path;
+    FILE* commit_file;
+
+    hexstring = hash_to_string(commit->hash);
+
+    /* build out dir - this is duplicate code, prob abstract */
+    out_path = malloc(strlen(OBJ_DIR)+strlen(hexstring)+1);
+    memcpy(out_path, OBJ_DIR, strlen(OBJ_DIR)+1);
+    strcat(out_path, hexstring);
+
+    /* check if it already exists */
+    if (access(out_path, F_OK) == 0) { // already exists
+        free(out_path);
+        return hexstring;
+    }
+
+    /* write */
+    commit_file = fopen(out_path, "wb"); 
+    if (commit_file == NULL) {
+        free(hexstring);
+        free(out_path);
+        perror(NULL);
+        return NULL;
+    }
+
+    /* write n shit */
+    write_hash(commit_file, commit->hash);
+    write_hash(commit_file, commit->root_tree->hash);
+
+    fwrite(&commit->committer, 1, strlen(commit->committer), commit_file);
+    fwrite(&commit->timestamp, sizeof(time_t), 1, commit_file);
+    fwrite(&commit->msg, 1, strlen(commit->msg), commit_file);
+    if (commit->parent_commit != NULL) {
+        fwrite(&commit->parent_commit->hash, 1, strlen(commit->parent_commit->hash), commit_file);
+    }
+
+    /* clean up */
+    fclose(commit_file);
+    free(out_path);
+
+    return hexstring;
+}
+
+Tree*
+read_tree(char* file_path)
 {
-    /* write commit to objects */
+    /* PROB NEED TO MAKE THIS RECURSIVE */
+    /* either that or make it only one recursive depth */
+    /* and it is someone else's responsbilitiy to recurse */
+
+    /* FILE* tree_file; */
+    /* Tree* out_tree; */
+    /* char* hash; */
+
+    /* tree_file = fopen(file_path, "rb"); */
+    /* if (tree_file == NULL) { */
+    /*     perror(NULL); */
+    /*     return NULL; */
+    /* } */
+
+    
+
+    /* /1* read from file *1/ */
+    /* while (true) { */
+
+    /*     child_tree = malloc(sizeof(Tree)); */
+    /*     fread(&child_tree->node_type, NODETYPE_SIZE, 1, tree_file); */
+
+    /*     hash = malloc(SHA_DIGEST_LENGTH); */
+    /*     fread(&hash, 1, SHA_DIGEST_LENGTH, tree_file); */
+    /*     child_tree->hash = hash; */
+
+    /*     child_tree->name = read_until_null(tree_file); */
+
+    /* } */
 
 
-    /* write all trees and blobs to objects */
-
-
-    /* clear index */    
+    /* return out_tree; */
 
     return NULL;
 }
@@ -237,13 +307,9 @@ add_index_item(char* file_path)
     fwrite(&file_stat.st_uid, sizeof(uint32_t), 1, index_file);
     fwrite(&file_stat.st_gid, sizeof(uint32_t), 1, index_file);
     fwrite(&file_stat.st_size, sizeof(uint32_t), 1, index_file);
-    for (int i = 0; i < SHA_DIGEST_LENGTH; i++) {
-        fwrite(&hash[i], sizeof(unsigned char), 1, index_file);
-    }
+    write_hash(index_file, hash);
     fwrite(file_path, 1, strlen(file_path), index_file);
-
-    char null = 0;
-    fwrite(&null, 1, 1, index_file); // index entry ends with null character
+    write_null(index_file); // index entry ends with null character
 
     /* clean up */
     /* free(&index); */

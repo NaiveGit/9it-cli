@@ -25,5 +25,7 @@ extern char* hash_to_string(unsigned char* hash);
 extern int compress_file(FILE* stream, char* outname);
 
 extern char* read_until_null(FILE* stream);
+extern void write_hash(FILE* stream, unsigned char* hash);
+extern void write_null(FILE* stream);
 
 #endif

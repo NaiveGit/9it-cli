@@ -186,3 +186,18 @@ read_until_null(FILE* stream)
 
     return out_str;
 }
+
+void
+write_hash(FILE* stream, unsigned char* hash)
+{ // might need to error check this
+    for (int i = 0; i < SHA_DIGEST_LENGTH; i++) {
+        fwrite(&hash[i], sizeof(unsigned char), 1, stream);
+    }
+}
+
+void
+write_null(FILE* stream)
+{
+    char null = 0;
+    fwrite(&null, sizeof(char), 1, stream);
+}

@@ -31,11 +31,11 @@ typedef struct Commit Commit;
 struct Commit {
     unsigned char* hash;
     Tree* root_tree;
-    Commit* parent_commit;
-    char* author;
-    char* committer;
+    /* char* author; */ /* we dont need author prob */
+    char* committer; // read from enviroment variables
+    time_t timestamp;
     char* msg;
-    char* timestamp;
+    Commit* parent_commit;
 };
 
 typedef struct IndexItem {
@@ -58,10 +58,13 @@ typedef struct Index {
 } Index;
 
 
-/* objects */
+/* write objects */
 extern char* write_blob(char* file_path);
 extern char* write_tree(Tree* tree);
 extern char* write_commit(Commit* commit);
+
+/* read objects */
+extern Tree* read_tree(char* file_path);
 
 /* index */
 extern int init_index(void);
