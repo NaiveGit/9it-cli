@@ -63,13 +63,13 @@ extern char* write_tree(Tree* tree);
 extern char* write_commit(Commit* commit);
 
 /* read objects */
-extern char* read_tree(unsigned char* tree_hash, Tree* root);
+extern char* read_tree(Tree* root);
 
 /* hashing objects */
 extern void hash_tree(Tree* tree); // writes hash to tree's hash field
+extern void hash_commit(Commit* commit);
 
 /* index */
-extern int init_index(void);
 extern Index* read_index(void);
 extern int add_index_item(char* file_path);
 

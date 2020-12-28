@@ -2,15 +2,6 @@
 #include "headers/fileutils.h"
 #include "headers/globals.h"
 
-#define INDEX_DEFAULT_HEADER "DIRC\x00\x00\x00\x01\x00\x00\x00\x00"
-#define INDEX_HEADER_START 0
-#define INDEX_HEADER_ENTRY_START 8
-#define INDEX_HEADER_ENTRY_LENGTH 4
-#define INDEX_HEADER_LENGTH 12
-
-#define INDEX_ENTRY_START INDEX_HEADER_LENGTH
-#define INDEX_ENTRY_LENGTH 0
-
 char*
 write_blob(char* file_path)
 {
@@ -22,17 +13,13 @@ write_blob(char* file_path)
     /* open original file */
     file = fopen(file_path, "rb");
     if (file == NULL) {
-        printf("Something went wrong opening %s\n", file_path);
+        perror(NULL);
         return NULL;
     }
 
     file_hash = hash_stream(file);
     hexstring = hash_to_string(file_hash);
-
-    /* build the correct out dir */
-    out_path = malloc(strlen(OBJ_DIR)+strlen(hexstring)+1);
-    memcpy(out_path, OBJ_DIR, strlen(OBJ_DIR)+1);
-    strcat(out_path, hexstring);
+    out_path = cat_obj_dir(hexstring);
 
     /* check to see if object already exists */
     if (access(out_path, F_OK) != 0) { // does not exist
@@ -61,11 +48,7 @@ write_tree(Tree* tree)
      * NUMBER OF CHILDREN, ADD AN ASSERRTION */
 
     hexstring = hash_to_string(tree->hash);
-
-    /* build out dir */
-    out_path = malloc(strlen(OBJ_DIR)+strlen(hexstring)+1);
-    memcpy(out_path, OBJ_DIR, strlen(OBJ_DIR)+1);
-    strcat(out_path, hexstring);
+    out_path = cat_obj_dir(hexstring);
 
     /* check if tree exists */
     if (access(out_path, F_OK) == 0) { // already exists
@@ -111,11 +94,7 @@ write_commit(Commit* commit)
     FILE* commit_file;
 
     hexstring = hash_to_string(commit->hash);
-
-    /* build out dir - this is duplicate code, prob abstract */
-    out_path = malloc(strlen(OBJ_DIR)+strlen(hexstring)+1);
-    memcpy(out_path, OBJ_DIR, strlen(OBJ_DIR)+1);
-    strcat(out_path, hexstring);
+    out_path = cat_obj_dir(hexstring);
 
     /* check if it already exists */
     if (access(out_path, F_OK) == 0) { // already exists
@@ -151,7 +130,7 @@ write_commit(Commit* commit)
 }
 
 char*
-read_tree(unsigned char* tree_hash, Tree* root)
+read_tree(Tree* root)
 {
     /* NOTE, this function is not RECURSIVE */
     /* it is some else's responsibility to implement */
@@ -164,10 +143,8 @@ read_tree(unsigned char* tree_hash, Tree* root)
     char* hash;
 
     /* build out dir */
-    hexstring = hash_to_string(tree_hash);
-    tree_path = malloc(strlen(OBJ_DIR)+strlen(hexstring)+1);
-    memcpy(tree_path, OBJ_DIR, strlen(OBJ_DIR)+1);
-    strcat(tree_path, hexstring);
+    hexstring = hash_to_string(root->hash);
+    tree_path = cat_obj_dir(hexstring);
 
     tree_file = fopen(tree_path, "rb");
     if (tree_file == NULL) {
@@ -177,8 +154,7 @@ read_tree(unsigned char* tree_hash, Tree* root)
     
     /* get number of entries first */
     fread(&root->cnum, sizeof(uint32_t), 1, tree_file);
-
-    root->hash = hexstring; 
+    /* ROOT HASH IS NOT INITIALIZED!! */
     /* NAME IS NOT INITIALIZED BY THIS FUNCTION!! */
     root->nodeType = NodeType_tree;
     root->children = malloc((root->cnum)*sizeof(Tree));
@@ -215,7 +191,7 @@ read_tree(unsigned char* tree_hash, Tree* root)
 
 void
 hash_tree(Tree* tree)
-{ // careful not to pass empty tree, add assert
+{ 
     
     int buf_size;
     FILE* temp_stream;
@@ -243,31 +219,32 @@ hash_tree(Tree* tree)
 
 }
 
-int
-init_index(void)
-{ 
-    FILE* bufstream;
-    FILE* outstream;
-
-    bufstream = fmemopen(INDEX_DEFAULT_HEADER, INDEX_HEADER_LENGTH, "rb");
-    if (bufstream == NULL) {
-        perror(NULL);
-        /* printf("Something went wrong opening the string buffer\n"); */
-        return -1;
-    }
-    outstream = fopen(INDEX_FILE, "wb");
-    if (outstream == NULL) {
-        perror(NULL);
-        /* printf("Something went wrong opening the index file\n"); */
-        return -1;
-    }
+void
+hash_commit(Commit* commit)
+{
+    int buf_size;
+    FILE* temp_stream;
     
-    copy_stream(bufstream, outstream); // error check this?
+    buf_size = 
+        SHA_DIGEST_LENGTH // tree hash
+        + strlen(commit->committer)
+        + sizeof(time_t)
+        + strlen(commit->msg)
+        + SHA_DIGEST_LENGTH; // previous commit hash
 
-    fclose(bufstream);
-    fclose(outstream);
+    temp_stream = fmemopen(NULL, buf_size, "r+b");
 
-    return 0;
+    write_hash(temp_stream, commit->root_tree->hash);
+    fwrite(&commit->committer, 1, strlen(commit->committer), temp_stream);
+    fwrite(&commit->timestamp, sizeof(time_t), 1, temp_stream);
+    fwrite(&commit->msg, 1, strlen(commit->msg), temp_stream);
+    if (commit->parent_commit->hash != NULL) { // only if its not first commit
+        write_hash(temp_stream, commit->parent_commit->hash);
+    }
+
+    commit->hash = hash_stream(temp_stream);
+
+    fclose(temp_stream);
 }
 
 Index*

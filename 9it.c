@@ -78,7 +78,6 @@ main(int argc, char** argv)
     /* children_array = malloc(sizeof(Tree)); */
     /* children_array[0] = child_tree; */
 
-
     /* Tree root_tree; */
     /* FILE* root_file; */
 
@@ -97,6 +96,10 @@ main(int argc, char** argv)
 
     /* read_tree("f52d5ce2108ba890ad4232436c5395e82d20abb1", tree); */
 
+    /* char* buf = ""; */
+    /* FILE* stream = fmemopen(buf, strlen(buf), "rb"); */
+    /* printf("%s\n",hash_to_string(hash_stream(stream))); */
+    
 
     return 0;
 }

@@ -1,4 +1,5 @@
 
+#include "headers/globals.h"
 #include "headers/fileutils.h"
 #include "headers/objutils.h"
 #define READ_CHUNK_SIZE 1024
@@ -26,10 +27,9 @@ init_aux(char* root)
         ind++;
     }
 
-    /* init index file */
-    if (init_index() == -1) {
-        printf("Error initializing index file.\n");
-    }
+    /* error check these ma nibba */
+    write_to_file(INDEX_FILE, INDEX_DEFAULT_HEADER, INDEX_HEADER_LENGTH); //index file
+    write_to_file(HEAD_FILE, HEAD_DEFAULT, strlen(HEAD_DEFAULT));
     
     printf("Successfully initialized 9it in current working directory.\n");
 
@@ -75,6 +75,31 @@ mkfolder(char* root, char* dir_name)
 }
 
 
+int
+write_to_file(char* file_path, char* contents, int length)
+{ 
+    FILE* bufstream;
+    FILE* outstream;
+
+    bufstream = fmemopen(contents, length, "rb");
+    if (bufstream == NULL) {
+        perror(NULL);
+        return -1;
+    }
+    outstream = fopen(file_path, "wb");
+    if (outstream == NULL) {
+        perror(NULL);
+        return -1;
+    }
+    
+    copy_stream(bufstream, outstream); // error check this?
+
+    fclose(bufstream);
+    fclose(outstream);
+
+    return 0;
+
+}
 /* all of these functions are very similar, perhaps find a way to abstract */
 int
 copy_stream(FILE* instream, FILE* outstream)
@@ -200,4 +225,16 @@ write_null(FILE* stream)
 {
     char null = 0;
     fwrite(&null, sizeof(char), 1, stream);
+}
+
+char*
+cat_obj_dir(char* obj_file)
+{
+    char* out_path;
+
+    out_path = malloc(strlen(OBJ_DIR)+strlen(obj_file)+1);
+    memcpy(out_path, OBJ_DIR, strlen(OBJ_DIR)+1);
+    strcat(out_path, obj_file);
+
+    return out_path;
 }
