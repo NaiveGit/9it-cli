@@ -91,7 +91,7 @@ write_tree(Tree* tree)
 
         fwrite(&child.nodeType, NODETYPE_SIZE, 1, tree_file);        
         write_hash(tree_file, child.hash);
-        fwrite(&child.name, 1, strlen(child.name), tree_file);
+        fwrite(child.name, 1, strlen(child.name), tree_file);
         write_null(tree_file);
     }
 
@@ -151,11 +151,12 @@ write_commit(Commit* commit)
 }
 
 char*
-read_tree(char* hexstring, Tree* root)
+read_tree(unsigned char* tree_hash, Tree* root)
 {
     /* NOTE, this function is not RECURSIVE */
     /* it is some else's responsibility to implement */
 
+    char* hexstring;
     char* tree_path;
     FILE* tree_file;
     int entry_num;
@@ -163,6 +164,7 @@ read_tree(char* hexstring, Tree* root)
     char* hash;
 
     /* build out dir */
+    hexstring = hash_to_string(tree_hash);
     tree_path = malloc(strlen(OBJ_DIR)+strlen(hexstring)+1);
     memcpy(tree_path, OBJ_DIR, strlen(OBJ_DIR)+1);
     strcat(tree_path, hexstring);
@@ -186,10 +188,11 @@ read_tree(char* hexstring, Tree* root)
 
         /* create new children */
         child_tree = malloc(sizeof(Tree));
+
         fread(&child_tree->nodeType, NODETYPE_SIZE, 1, tree_file);
 
         hash = malloc(SHA_DIGEST_LENGTH);
-        fread(&hash, 1, SHA_DIGEST_LENGTH, tree_file);
+        fread(hash, 1, SHA_DIGEST_LENGTH, tree_file);
         child_tree->hash = hash;
 
         child_tree->name = read_until_null(tree_file);
@@ -207,6 +210,36 @@ read_tree(char* hexstring, Tree* root)
     free(tree_path);
 
     return hexstring;
+
+}
+
+void
+hash_tree(Tree* tree)
+{ // careful not to pass empty tree, add assert
+    
+    int buf_size;
+    FILE* temp_stream;
+
+    buf_size = 0;
+    for (int i = 0; i < tree->cnum; i++) {
+        buf_size += NODETYPE_SIZE;    
+        buf_size += SHA_DIGEST_LENGTH;
+        buf_size += strlen(tree->children[i].name);
+    }
+
+    temp_stream = fmemopen(NULL, buf_size, "r+b");
+    for (int i = 0; i < tree->cnum; i++) {
+        Tree child_tree = tree->children[i];
+
+        fwrite(&child_tree.nodeType, NODETYPE_SIZE, 1, temp_stream);
+        write_hash(temp_stream, child_tree.hash);
+        fwrite(&child_tree.name, 1, strlen(child_tree.name), temp_stream);
+
+    }
+
+    tree->hash = hash_stream(temp_stream);
+
+    fclose(temp_stream);
 
 }
 

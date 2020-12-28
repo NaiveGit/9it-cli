@@ -57,14 +57,16 @@ typedef struct Index {
     char* checksum; // prob dont need?
 } Index;
 
-
 /* write objects */
 extern char* write_blob(char* file_path);
 extern char* write_tree(Tree* tree);
 extern char* write_commit(Commit* commit);
 
 /* read objects */
-extern char* read_tree(char* hexstring, Tree* root);
+extern char* read_tree(unsigned char* tree_hash, Tree* root);
+
+/* hashing objects */
+extern void hash_tree(Tree* tree); // writes hash to tree's hash field
 
 /* index */
 extern int init_index(void);
