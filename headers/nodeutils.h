@@ -21,4 +21,4 @@ tree
 
 extern Tree* commit_tree(void);
 
-endif
+#endif

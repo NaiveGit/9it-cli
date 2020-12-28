@@ -52,7 +52,7 @@ Tree*
 commit_tree(void)
 {
     //First check if head exists
-    unsigned char recent_commit = get_head_commit();
+    unsigned char* recent_commit = get_head_commit();
     if (NULL != recent_commit){
         // File exists
         Tree* root;
