@@ -3,14 +3,20 @@
 
 void add_to(Tree* root, Tree* new_node, char* nextFolder,char* path);
 int find_folder(Tree* root, char* path);
+Tree* commit_tree(void);
+void hash_all(Tree* root);
+Tree* duplicate_tree(unsigned char* hash, char* name);
+void delete(Tree* root, char* nextFolder, char* path);
+
+
 
 Tree*
-make_tree(Index* index)
+init_tree(Index* index)
 {
     Tree* root;
     root = malloc(sizeof(Tree));
     root->nodeType = NodeType_tree;
-    root->name = "Root folder lmao";
+    root->name = "";
     root->children = malloc(0);
     root->cnum = 0;
 
@@ -18,7 +24,6 @@ make_tree(Index* index)
 
     // Making the node
     Tree* new_node;
-    
 
     // Loop thru the index and make folders n shit.
     
@@ -42,6 +47,62 @@ make_tree(Index* index)
     return root;
 }
 
+// Commit the tree object
+Tree*
+commit_tree(void)
+{
+    //First check if head exists
+    if (access(HEAD_FILE,R_OK)){
+        // File exists
+        Tree* root;
+        root = duplicate_tree(get_head_commit(), "");
+        // LOGIC
+
+        // LOGIC
+    }
+}
+
+// Hash all tree
+void
+hash_all(Tree* root)
+{
+   if (root->nodeType == NodeType_tree) { // Note: Does hash all work with an empty folder?
+       for (int i = 0; i < root->cnum; ++i) {
+           hash_all(&root->children[i]);
+       }
+       hash_tree(root);
+   } 
+//   else if (root->nodeType == NodeType_blob) {
+       // Dunno what to put here.
+//   }
+}
+
+// Duplicates the tree
+Tree*
+duplicate_tree(unsigned char* hash, char* name)
+{
+    Tree* root;
+    // Node we're adding to tree
+    root = malloc(sizeof(Tree));
+    root->hash = hash;
+    root->name = name;
+    read_tree(root);
+    for (int i = 0; i < root->cnum; ++i) {
+        if (root->children[i].nodeType == NodeType_tree) {
+            duplicate_tree(root->children[i].hash, root->children[i].name);
+        }
+    }
+    return root;
+}
+
+// For deleting files
+void
+delete(Tree* root, char* nextFolder, char* path)
+{
+    
+}
+
+// For adding files
 void
 add_to(Tree* root, Tree* new_node, char* nextFolder,char* path)
 {
@@ -64,15 +125,12 @@ add_to(Tree* root, Tree* new_node, char* nextFolder,char* path)
             root->cnum+=1;
             root->children = realloc(root->children,root->cnum);
             root->children[root->cnum-1] = *(new_folder);
-            add_to(&root->children[root->cnum-1],new_node,nextFolder,path);
-
-
+            add_to(&(root->children[root->cnum-1]),new_node,nextFolder,path);
         }
         //Go into folder
         else {
             add_to(&root->children[folderpos],new_node,nextFolder,path);
         }
-        
     }
     else {//We've reached the end, add the object file here. 
         root->cnum+=1;
@@ -93,3 +151,22 @@ find_folder(Tree* root, char* path)
     return -1;
 }
 
+/*
+// Clean folder: Run this after delete to remove empty folders.
+int
+clean_folders(Tree* root)
+{
+    //Return 1 if folder empty, return 0 if folder is not empty.
+    if (root->cnum == 0 && root->nodeType == NodeType_tree) {
+        return 1;
+    }
+    else if (root->nodeType == NodeType_blob) {
+        return 0;
+    }
+    else { // If folder is not empty, keep on recurring
+        for (int i = 0; i < root->cnum; ++i) {
+            if 
+        }
+    }
+}
+*/

@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include "objutils.h"
+#include "globals.h"
 /*
 
 tree
@@ -18,7 +19,7 @@ tree
 
 */
 
-extern Tree* make_tree(Index* index);
+extern Tree* init_tree(Index* index);
 
 
 #endif

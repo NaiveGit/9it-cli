@@ -21,7 +21,7 @@ nodeutils.o: nodeutils.c headers/nodeutils.h
 	$(CC) -c nodeutils.c
 
 9it: 9it.c fileutils.o options.o objutils.o nodeutils.o
-	$(CC) -o $@ $^ -lcrypto -lz
+	$(CC) -o $@ $^ -lcrypto -lz 
 
 clean:
 	rm 9it
