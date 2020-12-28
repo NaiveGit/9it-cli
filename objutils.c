@@ -19,7 +19,7 @@ write_blob(char* file_path)
 
     file_hash = hash_stream(file);
     hexstring = hash_to_string(file_hash);
-    out_path = cat_obj_dir(hexstring);
+    out_path = cat_str(OBJ_DIR, hexstring);
 
     /* check to see if object already exists */
     if (access(out_path, F_OK) != 0) { // does not exist
@@ -48,7 +48,7 @@ write_tree(Tree* tree)
      * NUMBER OF CHILDREN, ADD AN ASSERRTION */
 
     hexstring = hash_to_string(tree->hash);
-    out_path = cat_obj_dir(hexstring);
+    out_path = cat_str(OBJ_DIR, hexstring);
 
     /* check if tree exists */
     if (access(out_path, F_OK) == 0) { // already exists
@@ -94,7 +94,7 @@ write_commit(Commit* commit)
     FILE* commit_file;
 
     hexstring = hash_to_string(commit->hash);
-    out_path = cat_obj_dir(hexstring);
+    out_path = cat_str(OBJ_DIR, hexstring);
 
     /* check if it already exists */
     if (access(out_path, F_OK) == 0) { // already exists
@@ -144,7 +144,7 @@ read_tree(Tree* root)
 
     /* build out dir */
     hexstring = hash_to_string(root->hash);
-    tree_path = cat_obj_dir(hexstring);
+    tree_path = cat_str(OBJ_DIR, hexstring);
 
     tree_file = fopen(tree_path, "rb");
     if (tree_file == NULL) {
@@ -354,4 +354,35 @@ add_index_item(char* file_path)
     return 0;
 }
 
+unsigned char*
+get_head_commit(void)
+{
+    FILE* head_file;
+    char* head_ref;
+    FILE* ref_file;
+    char* ref_path;
+    unsigned char* hash;
 
+    head_file = fopen(HEAD_FILE, "rb");
+    if (head_file == NULL) {
+        perror(NULL);
+        return NULL;
+    }
+    head_ref = read_until_null(head_file);
+    fclose(head_file);
+
+    ref_path = cat_str(DOT_DIR, head_ref);
+    ref_file = fopen(ref_path, "rb");
+    free(head_ref);
+    free(ref_path);
+    if (ref_file == NULL) { // no commits
+        return NULL;
+    }
+
+    hash = malloc(SHA_DIGEST_LENGTH);
+    fread(hash, sizeof(unsigned char), SHA_DIGEST_LENGTH, ref_file);
+
+    fclose(ref_file);
+    
+    return hash;
+}

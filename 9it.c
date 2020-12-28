@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -100,6 +99,5 @@ main(int argc, char** argv)
     /* FILE* stream = fmemopen(buf, strlen(buf), "rb"); */
     /* printf("%s\n",hash_to_string(hash_stream(stream))); */
     
-
     return 0;
 }

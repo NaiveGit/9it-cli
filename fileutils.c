@@ -1,4 +1,3 @@
-
 #include "headers/globals.h"
 #include "headers/fileutils.h"
 #include "headers/objutils.h"
@@ -29,7 +28,7 @@ init_aux(char* root)
 
     /* error check these ma nibba */
     write_to_file(INDEX_FILE, INDEX_DEFAULT_HEADER, INDEX_HEADER_LENGTH); //index file
-    write_to_file(HEAD_FILE, HEAD_DEFAULT, strlen(HEAD_DEFAULT));
+    write_to_file(HEAD_FILE, HEAD_DEFAULT, strlen(HEAD_DEFAULT)+1);
     
     printf("Successfully initialized 9it in current working directory.\n");
 
@@ -228,13 +227,14 @@ write_null(FILE* stream)
 }
 
 char*
-cat_obj_dir(char* obj_file)
+cat_str(char* first, char* second)
 {
-    char* out_path;
+    char* out;
 
-    out_path = malloc(strlen(OBJ_DIR)+strlen(obj_file)+1);
-    memcpy(out_path, OBJ_DIR, strlen(OBJ_DIR)+1);
-    strcat(out_path, obj_file);
+    out = (char*)malloc(strlen(first)+strlen(second)+1);
+    memcpy(out, first, strlen(first)+1);
+    strcat(out, second);
 
-    return out_path;
+    return out;
 }
+

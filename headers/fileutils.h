@@ -29,6 +29,6 @@ extern char* read_until_null(FILE* stream);
 extern void write_hash(FILE* stream, unsigned char* hash);
 extern void write_null(FILE* stream);
 
-extern char* cat_obj_dir(char* obj_file);
+extern char* cat_str(char* first, char* second);
 
 #endif

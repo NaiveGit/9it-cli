@@ -73,6 +73,6 @@ extern void hash_commit(Commit* commit);
 extern Index* read_index(void);
 extern int add_index_item(char* file_path);
 
-extern int set_head(char* ref_path);
+extern unsigned char* get_head_commit(void);
 
 #endif
