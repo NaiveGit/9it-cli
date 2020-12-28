@@ -82,6 +82,9 @@ write_tree(Tree* tree)
         return NULL;
     }
 
+    /* write the number of entries first */
+    fwrite(&tree->cnum, sizeof(uint32_t), 1, tree_file);
+
     for (int c = 0; c < tree->cnum; c++) {
 
         child = tree->children[c];
@@ -136,7 +139,7 @@ write_commit(Commit* commit)
     fwrite(&commit->committer, 1, strlen(commit->committer), commit_file);
     fwrite(&commit->timestamp, sizeof(time_t), 1, commit_file);
     fwrite(&commit->msg, 1, strlen(commit->msg), commit_file);
-    if (commit->parent_commit != NULL) {
+    if (commit->parent_commit != NULL) { // not the first commit
         fwrite(&commit->parent_commit->hash, 1, strlen(commit->parent_commit->hash), commit_file);
     }
 
@@ -147,43 +150,64 @@ write_commit(Commit* commit)
     return hexstring;
 }
 
-Tree*
-read_tree(char* file_path)
+char*
+read_tree(char* hexstring, Tree* root)
 {
-    /* PROB NEED TO MAKE THIS RECURSIVE */
-    /* either that or make it only one recursive depth */
-    /* and it is someone else's responsbilitiy to recurse */
+    /* NOTE, this function is not RECURSIVE */
+    /* it is some else's responsibility to implement */
 
-    /* FILE* tree_file; */
-    /* Tree* out_tree; */
-    /* char* hash; */
+    char* tree_path;
+    FILE* tree_file;
+    int entry_num;
+    Tree* child_tree;
+    char* hash;
 
-    /* tree_file = fopen(file_path, "rb"); */
-    /* if (tree_file == NULL) { */
-    /*     perror(NULL); */
-    /*     return NULL; */
-    /* } */
+    /* build out dir */
+    tree_path = malloc(strlen(OBJ_DIR)+strlen(hexstring)+1);
+    memcpy(tree_path, OBJ_DIR, strlen(OBJ_DIR)+1);
+    strcat(tree_path, hexstring);
 
+    tree_file = fopen(tree_path, "rb");
+    if (tree_file == NULL) {
+        perror(NULL);
+        return NULL;
+    }
     
+    /* get number of entries first */
+    fread(&root->cnum, sizeof(uint32_t), 1, tree_file);
 
-    /* /1* read from file *1/ */
-    /* while (true) { */
+    root->hash = hexstring; 
+    /* NAME IS NOT INITIALIZED BY THIS FUNCTION!! */
+    root->nodeType = NodeType_tree;
+    root->children = malloc((root->cnum)*sizeof(Tree));
 
-    /*     child_tree = malloc(sizeof(Tree)); */
-    /*     fread(&child_tree->node_type, NODETYPE_SIZE, 1, tree_file); */
+    /* read from file */
+    for (int i = 0; i < root->cnum; i ++) {
 
-    /*     hash = malloc(SHA_DIGEST_LENGTH); */
-    /*     fread(&hash, 1, SHA_DIGEST_LENGTH, tree_file); */
-    /*     child_tree->hash = hash; */
+        /* create new children */
+        child_tree = malloc(sizeof(Tree));
+        fread(&child_tree->nodeType, NODETYPE_SIZE, 1, tree_file);
 
-    /*     child_tree->name = read_until_null(tree_file); */
+        hash = malloc(SHA_DIGEST_LENGTH);
+        fread(&hash, 1, SHA_DIGEST_LENGTH, tree_file);
+        child_tree->hash = hash;
 
-    /* } */
+        child_tree->name = read_until_null(tree_file);
 
+        child_tree->cnum = 0;
+        child_tree->children = malloc(0);
 
-    /* return out_tree; */
+        /* write to array */
+        root->children[i] = *child_tree;
 
-    return NULL;
+    }
+
+    /* clean */
+    fclose(tree_file);
+    free(tree_path);
+
+    return hexstring;
+
 }
 
 int

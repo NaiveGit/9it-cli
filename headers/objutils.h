@@ -64,11 +64,13 @@ extern char* write_tree(Tree* tree);
 extern char* write_commit(Commit* commit);
 
 /* read objects */
-extern Tree* read_tree(char* file_path);
+extern char* read_tree(char* hexstring, Tree* root);
 
 /* index */
 extern int init_index(void);
 extern Index* read_index(void);
 extern int add_index_item(char* file_path);
+
+extern int set_head(char* ref_path);
 
 #endif
