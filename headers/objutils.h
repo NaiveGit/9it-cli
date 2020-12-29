@@ -74,5 +74,6 @@ extern Index* read_index(void);
 extern int add_index_item(char* file_path);
 
 extern unsigned char* get_head_commit(void);
+extern unsigned char* read_ref(char* branch_name);
 
 #endif

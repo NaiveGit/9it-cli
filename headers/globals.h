@@ -4,6 +4,9 @@
 // add sm for .9it dir instead of this mess
 #define DOT_DIR ".9it/"
 #define OBJ_DIR DOT_DIR "obj/"
+#define REFS_DIR DOT_DIR "refs/"
+#define HEADS_DIR REFS_DIR "heads/"
+
 #define INDEX_FILE DOT_DIR "index"
 #define HEAD_FILE DOT_DIR "HEAD"
 
@@ -18,6 +21,6 @@
 #define INDEX_ENTRY_LENGTH 0
 
 /* head stuff */
-#define HEAD_DEFAULT "refs/heads/senpai"
+#define HEAD_DEFAULT "senpai"
 
 #endif

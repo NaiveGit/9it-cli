@@ -94,6 +94,7 @@ parse_command(char* cmd_name, Argp* argp, ArgpState* state)
     argv[0] = argv0;
     
     /* empty the rest of args */
+    /* state->next += argc - 1; */
     state->next = state->argc;
 
     return;
@@ -103,16 +104,16 @@ static error_t
 parse_global_opt(int key, char* arg, ArgpState* state)
 {
     switch (key) {
-        case ARGP_KEY_ARG:
 
+        case ARGP_KEY_ARG:
             if (strcmp(arg, "add") == 0 || strcmp(arg, "stage") == 0) {
-                /* printf("Add command!\n"); */
+                printf("Add command!\n");
                 parse_command("add", &add_argp, state);
             } else if (strcmp(arg, "commit") == 0) {
-                /* printf("Commit command!\n"); */
+                printf("Commit command!\n");
                 parse_command("commit", &commit_argp, state);
             } else if (strcmp(arg, "init") == 0) {
-                /* printf("Init command!\n"); */
+                printf("Init command!\n");
                 parse_command("init", &init_argp, state);
             } else {
                 /* argp_error(state, "%s is not a valid command", arg); */    
@@ -163,27 +164,21 @@ parse_commit_opt(int key, char* arg, ArgpState* state)
 static error_t
 parse_init_opt(int key, char* arg, ArgpState* state)
 {
-    char* working_dir;
 
     switch (key) {
+
         case 'b':
             printf("bare\n");
-            // grab current path
-            /* working_dir = getcwd(NULL, 0); */
-            /* init_dot9it(working_dir); // bare is a bit broken rn */
-            /* free(working_dir); */
-
             break;
 
-        case ARGP_KEY_NO_ARGS: // bug rn, this is being called when --bare is passed too
-            printf("not bare\n");
-            /* working_dir = getcwd(NULL, 0); // maybe abstract this to a global var later */
-            /* char* dot9it = "/.9it"; // abstract this out sometime */
-            /* working_dir = realloc(working_dir, strlen(working_dir)+strlen(dot9it)+1); */
-            /* strcat(working_dir, dot9it); */
-            /* init_dot9it(working_dir); */
-            /* free(working_dir); */
-            init_aux(".9it/");
+        case ARGP_KEY_NO_ARGS: 
+            
+            // handle no args
+            if (state->argc == 1) {
+                printf("not bare\n");
+                init_aux(".9it/");
+            }
+            
             break;
 
         default:

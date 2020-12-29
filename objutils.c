@@ -358,9 +358,7 @@ unsigned char*
 get_head_commit(void)
 {
     FILE* head_file;
-    char* head_ref;
-    FILE* ref_file;
-    char* ref_path;
+    char* cur_branch;
     unsigned char* hash;
 
     head_file = fopen(HEAD_FILE, "rb");
@@ -368,13 +366,25 @@ get_head_commit(void)
         perror(NULL);
         return NULL;
     }
-    head_ref = read_until_null(head_file);
+    cur_branch = read_until_null(head_file);
     fclose(head_file);
 
-    ref_path = cat_str(DOT_DIR, head_ref);
+    hash = read_ref(cur_branch);
+
+    free(cur_branch);
+    
+    return hash;
+}
+
+unsigned char*
+read_ref(char* branch_name)
+{
+    FILE* ref_file;
+    char* ref_path;
+    unsigned char* hash;
+
+    ref_path = cat_str(HEADS_DIR, branch_name);
     ref_file = fopen(ref_path, "rb");
-    free(head_ref);
-    free(ref_path);
     if (ref_file == NULL) { // no commits
         return NULL;
     }
@@ -382,7 +392,8 @@ get_head_commit(void)
     hash = malloc(SHA_DIGEST_LENGTH);
     fread(hash, sizeof(unsigned char), SHA_DIGEST_LENGTH, ref_file);
 
+    free(ref_path);
     fclose(ref_file);
-    
-    return hash;
+   
+    return hash; 
 }
