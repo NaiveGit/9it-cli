@@ -7,6 +7,7 @@
 #include <stdio.h> 
 #include <stdlib.h> 
 #include <string.h>
+#include <stdarg.h>
 #include <openssl/sha.h>
 #include <zlib.h>
 
@@ -15,7 +16,6 @@
 #endif
 
 /* init related stuff */
-extern int init_aux(char* root);
 extern int mkfolder(char* root, char* dir_name);
 
 /* utilities - STREAM MUST BE IN BINARY MODE! */
@@ -29,6 +29,8 @@ extern char* read_until_null(FILE* stream);
 extern void write_hash(FILE* stream, unsigned char* hash);
 extern void write_null(FILE* stream);
 
-extern char* cat_str(char* first, char* second);
+extern char* cat_str(int num, ...);
+
+extern char* get_cwd(void);
 
 #endif

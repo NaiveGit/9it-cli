@@ -2,6 +2,7 @@
 #include "headers/options.h"
 #include "headers/fileutils.h"
 #include "headers/objutils.h"
+#include "headers/commands.h"
 
 static void parse_command(char* cmd_name, Argp* argp, ArgpState* state);
 
@@ -139,7 +140,6 @@ parse_add_opt(int key, char* arg, ArgpState* state)
             printf("Add update option\n");
             break;
         case ARGP_KEY_ARG:
-            /* printf("File %s\n", arg); */
             add_index_item(arg);
             break;
         default:
@@ -168,15 +168,14 @@ parse_init_opt(int key, char* arg, ArgpState* state)
     switch (key) {
 
         case 'b':
-            printf("bare\n");
+            init("");
             break;
 
         case ARGP_KEY_NO_ARGS: 
             
             // handle no args
             if (state->argc == 1) {
-                printf("not bare\n");
-                init_aux(".9it/");
+                init(".9it/");
             }
             
             break;

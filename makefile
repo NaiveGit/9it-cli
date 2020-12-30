@@ -5,8 +5,8 @@ make: 9it
 # %.o: %.c headers/%.h
 # 	$(CC) -c $^
 
-globals.o: headers/globals.h
-	$(CC) -c $^
+globals.o: globals.c headers/globals.h
+	$(CC) -c globals.c
 
 fileutils.o: fileutils.c headers/fileutils.h
 	$(CC) -c fileutils.c
@@ -20,8 +20,11 @@ objutils.o: objutils.c headers/objutils.h
 nodeutils.o: nodeutils.c headers/nodeutils.h
 	$(CC) -c nodeutils.c
 
-9it: 9it.c fileutils.o options.o objutils.o nodeutils.o
+commands.o: commands.c headers/commands.h
+	$(CC) -c commands.c
+
+9it: 9it.c fileutils.o options.o objutils.o nodeutils.o globals.o commands.o
 	$(CC) -o $@ $^ -lcrypto -lz 
 
 clean:
-	rm 9it
+	rm 9it *.o headers/*.gch

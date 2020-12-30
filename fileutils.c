@@ -4,38 +4,6 @@
 #define READ_CHUNK_SIZE 1024
 
 int 
-init_aux(char* root) 
-{
-    char* path;
-    int ind;
-    char* dirs[] = {
-        "obj/",
-        "refs/tags/",
-        "refs/heads/",
-        0
-    };
-
-    ind = 0;
-    while ((path = dirs[ind]) != 0) {
-
-        if (mkfolder(root, path) == -1) {
-            // prob also clean up half created dir
-            return -1;
-        }
-         
-        ind++;
-    }
-
-    /* error check these ma nibba */
-    write_to_file(INDEX_FILE, INDEX_DEFAULT_HEADER, INDEX_HEADER_LENGTH); //index file
-    write_to_file(HEAD_FILE, HEAD_DEFAULT, strlen(HEAD_DEFAULT)+1);
-    
-    printf("Successfully initialized 9it in current working directory.\n");
-
-    return 0;
-}
-
-int 
 mkfolder(char* root, char* dir_name)
 {
     struct stat sb;//For folder
@@ -227,14 +195,40 @@ write_null(FILE* stream)
 }
 
 char*
-cat_str(char* first, char* second)
+cat_str(int num, ...)
 {
+    va_list args;
+    int length;
     char* out;
+    char* cur;
 
-    out = (char*)malloc(strlen(first)+strlen(second)+1);
-    memcpy(out, first, strlen(first)+1);
-    strcat(out, second);
+    va_start(args, num);
+
+    length = 1;
+    out = malloc(sizeof(char));
+    out[0] = 0;
+
+    for (int i = 0; i < num; i++) {
+        cur = va_arg(args, char*);
+        length += strlen(cur);
+        out = realloc(out, length);
+        strcat(out, cur);
+    }
+
+    va_end(args);
 
     return out;
 }
 
+char*
+get_cwd(void)
+{
+    char cwd[PATH_MAX+2];
+    char* out;
+
+    getcwd(cwd, sizeof(cwd));
+
+    out = malloc(strlen(cwd)+1);
+    memcpy(out, cwd, strlen(cwd)+1);
+
+}

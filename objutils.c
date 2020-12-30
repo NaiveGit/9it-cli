@@ -19,7 +19,7 @@ write_blob(char* file_path)
 
     file_hash = hash_stream(file);
     hexstring = hash_to_string(file_hash);
-    out_path = cat_str(OBJ_DIR, hexstring);
+    out_path = cat_str(3, get_dot_dir(), OBJ_DIR, hexstring);
 
     /* check to see if object already exists */
     if (access(out_path, F_OK) != 0) { // does not exist
@@ -48,7 +48,7 @@ write_tree(Tree* tree)
      * NUMBER OF CHILDREN, ADD AN ASSERRTION */
 
     hexstring = hash_to_string(tree->hash);
-    out_path = cat_str(OBJ_DIR, hexstring);
+    out_path = cat_str(3, get_dot_dir, OBJ_DIR, hexstring);
 
     /* check if tree exists */
     if (access(out_path, F_OK) == 0) { // already exists
@@ -94,7 +94,7 @@ write_commit(Commit* commit)
     FILE* commit_file;
 
     hexstring = hash_to_string(commit->hash);
-    out_path = cat_str(OBJ_DIR, hexstring);
+    out_path = cat_str(3, get_dot_dir(), OBJ_DIR, hexstring);
 
     /* check if it already exists */
     if (access(out_path, F_OK) == 0) { // already exists
@@ -144,7 +144,7 @@ read_tree(Tree* root)
 
     /* build out dir */
     hexstring = hash_to_string(root->hash);
-    tree_path = cat_str(OBJ_DIR, hexstring);
+    tree_path = cat_str(3, get_dot_dir(), OBJ_DIR, hexstring);
 
     tree_file = fopen(tree_path, "rb");
     if (tree_file == NULL) {
@@ -305,6 +305,7 @@ add_index_item(char* file_path)
     FILE* filepath_stream;
     unsigned char* hash;
     Stat file_stat;
+    char* out_path;
     FILE* index_file;
     int index_header_entries;
 
@@ -318,11 +319,13 @@ add_index_item(char* file_path)
     hash = hash_stream(filepath_stream);
 
     /* build the binary */
-    index_file = fopen(INDEX_FILE, "r+b");
+    out_path = cat_str(2, get_dot_dir(), INDEX_FILE);
+    index_file = fopen(out_path, "r+b");
     if (index_file == NULL) {
         perror(NULL);
         return -1;
     }
+    free(out_path);
 
     /* increment number of index entries in header */
     fseek(index_file, INDEX_HEADER_ENTRY_START, SEEK_SET);
@@ -357,15 +360,19 @@ add_index_item(char* file_path)
 unsigned char*
 get_head_commit(void)
 {
+    char* out_path;
     FILE* head_file;
     char* cur_branch;
     unsigned char* hash;
 
-    head_file = fopen(HEAD_FILE, "rb");
+    out_path = cat_str(2, get_dot_dir(), HEAD_FILE);
+    head_file = fopen(out_path, "rb");
     if (head_file == NULL) {
         perror(NULL);
         return NULL;
     }
+    free(out_path);
+
     cur_branch = read_until_null(head_file);
     fclose(head_file);
 
@@ -383,7 +390,7 @@ read_ref(char* branch_name)
     char* ref_path;
     unsigned char* hash;
 
-    ref_path = cat_str(HEADS_DIR, branch_name);
+    ref_path = cat_str(3, get_dot_dir(), HEADS_DIR, branch_name);
     ref_file = fopen(ref_path, "rb");
     if (ref_file == NULL) { // no commits
         return NULL;
