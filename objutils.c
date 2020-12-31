@@ -408,3 +408,15 @@ read_ref(char* branch_name)
    
     return hash; 
 }
+
+void
+log_tree(Tree* tree)
+{
+
+}
+
+void
+log_commit(Commit* commit)
+{
+
+}

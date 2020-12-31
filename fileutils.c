@@ -195,7 +195,7 @@ write_null(FILE* stream)
 }
 
 char*
-cat_str(int num, ...)
+cat_str(int num, ...) // mallocs
 {
     va_list args;
     int length;

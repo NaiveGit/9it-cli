@@ -76,4 +76,8 @@ extern int add_index_item(char* file_path);
 extern unsigned char* get_head_commit(void);
 extern unsigned char* read_ref(char* branch_name);
 
+/* logging */
+extern void log_tree(Tree* tree);
+extern void log_commit(Commit* commit);
+
 #endif
