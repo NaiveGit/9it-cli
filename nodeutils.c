@@ -2,13 +2,12 @@
 
 void add_to(Tree* root, Tree* new_node, char* nextFolder,char* path);
 int find_folder(Tree* root, char* path);
-Tree* commit_tree(void);
+void commit_tree(void);
 void print_tree(Tree* root);
-// void hash_all(Tree* root);
-// Tree* duplicate_tree(unsigned char* hash, char* name);
-// void delete(Tree* root, char* nextFolder, char* path);
-
-
+void hash_all(Tree* root);
+Tree* duplicate_tree(unsigned char* hash, char* name);
+void delete(Tree* root, char* nextFolder, char* path);
+void write_full_tree(Tree* root);
 
 Tree*
 init_tree(Index* index)
@@ -98,26 +97,26 @@ print_tree(Tree* root)
 }
 
 // Commit the tree object
-Tree*
+void
 commit_tree(void)
 {
    Tree* root; 
    printf("Hello \n");
     
     //First check if head exists
-    unsigned char* recent_commit = NULL;// get_head_commit();
+    unsigned char* recent_commit = get_head_commit();
     if (NULL != recent_commit){
         // File exists
         Tree* root;
         // root = duplicate_tree(recent_commit, "");
-        //  
 
         // LOGIC
-        return root;
     }
     else {
         printf("Making the tree for the first tiem! \n");
-        // return init_tree(read_index());
+        printf("Index length: %d \n",read_index()->index_length);
+        root =  init_tree(read_index());
+        /*
         Index index;
         index.index_length = 3;
         IndexItem* items = malloc(3*sizeof(IndexItem));
@@ -136,12 +135,12 @@ commit_tree(void)
         items[2] = item3;
         index.index_items = items;
         root = init_tree(&index);
+        */
     }
-    print_tree(&root->children[1].children[0]);
-    print_tree(&root->children[0].children[0].children[0]);
-    print_tree(&root->children[0].children[0].children[1]);
-    print_tree(&root->children[1].children[0]);
-    return malloc(sizeof(Tree));
+    printf("Begin hashing! \n");
+    hash_all(root);
+    printf("Begin writing the tree! \n");
+    write_full_tree(root);
 }
 
 int
@@ -170,12 +169,12 @@ clean_folders(Tree* root)
     }
     else { // If folder is not empty, keep on recurring
         for (int i = 0; i < root->cnum; ++i) {
-            // if 
+            //if  
         }
     }
 }
 
-/*
+
 // Hash all tree
 void
 hash_all(Tree* root)
@@ -216,7 +215,13 @@ delete(Tree* root, char* nextFolder, char* path)
     
 }
 
+void 
+write_full_tree(Tree* root) {
+    write_tree(root);
+    for (int i = 0; i < root->cnum; i++) {
+        write_full_tree(&root->children[i]);
+    }
+}
 
 
-*/
 
