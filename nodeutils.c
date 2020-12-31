@@ -25,11 +25,10 @@ init_tree(Index* index)
     // Loop thru the index and make folders n shit.
     printf("Loop Index: \n"); 
     for (int i = 0; i < index->index_length; i++) {
-        printf("Looping at: %d, the %s should be different \n",i,index->index_items[i].file_path);
+        printf("Looping at: %d, currenty inserting: %s \n",i,index->index_items[i].file_path);
         IndexItem current = index->index_items[i];
         char* filep = malloc((strlen(current.file_path) + 2)*sizeof(char));
         strcpy(filep,current.file_path);
-        printf("After mallocing the file \n");
         char* path = malloc((strlen(current.file_path) + 2)*sizeof(char));
         path[0] = 0; 
 
@@ -45,7 +44,6 @@ init_tree(Index* index)
         new_node->children = malloc(sizeof(Tree));
         new_node->cnum = 0;
         add_to(root, new_node, nextFolder,path);
-        
         free(path);
     }
 
@@ -81,7 +79,7 @@ add_to(Tree* root, Tree* new_node, char* nextFolder,char* path)
         }
         //Go into folder
         else {
-            printf("Go into folder lmao \n");
+            printf("Go into folder postion %d \n",folderpos);
             add_to(&root->children[folderpos],new_node,nextFolder,path);
         }
     }
@@ -104,9 +102,10 @@ Tree*
 commit_tree(void)
 {
    Tree* root; 
+   printf("Hello \n");
     
     //First check if head exists
-    unsigned char* recent_commit = get_head_commit();
+    unsigned char* recent_commit = NULL;// get_head_commit();
     if (NULL != recent_commit){
         // File exists
         Tree* root;
@@ -120,20 +119,27 @@ commit_tree(void)
         printf("Making the tree for the first tiem! \n");
         // return init_tree(read_index());
         Index index;
-        index.index_length = 2;
-        IndexItem* items = malloc(2*sizeof(IndexItem));
+        index.index_length = 3;
+        IndexItem* items = malloc(3*sizeof(IndexItem));
         IndexItem item1;
-        item1.hash = "12345";
-        item1.file_path = "one/two/file.txt";
+        item1.hash = "1";
+        item1.file_path = "one/two/file1.txt";
         IndexItem item2;
-        item2.hash = "6789";
-        item2.file_path = "three/another.txt";
+        item2.hash = "2";
+        item2.file_path = "one/two/file2.txt";
+
+        IndexItem item3;
+        item3.hash = "3";
+        item3.file_path = "three/another.txt";
         items[0] = item1;
         items[1] = item2;
+        items[2] = item3;
         index.index_items = items;
         root = init_tree(&index);
     }
+    print_tree(&root->children[1].children[0]);
     print_tree(&root->children[0].children[0].children[0]);
+    print_tree(&root->children[0].children[0].children[1]);
     print_tree(&root->children[1].children[0]);
     return malloc(sizeof(Tree));
 }
@@ -143,13 +149,31 @@ find_folder(Tree* root, char* path)
 {
     Tree* children = root->children;
     for (int i = 0; i<root->cnum; ++i) {
-        if (children[i].name == path) {
+        if (strcmp(children[i].name,path) == 0) {
             return i;
         }
     }
     return -1;
 }
 
+
+// Clean folder: Run this after delete to remove empty folders.
+int
+clean_folders(Tree* root)
+{
+    //Return 1 if folder empty, return 0 if folder is not empty.
+    if (root->cnum == 0 && root->nodeType == NodeType_tree) {
+        return 1;
+    }
+    else if (root->nodeType == NodeType_blob) {
+        return 0;
+    }
+    else { // If folder is not empty, keep on recurring
+        for (int i = 0; i < root->cnum; ++i) {
+            // if 
+        }
+    }
+}
 
 /*
 // Hash all tree
@@ -196,22 +220,3 @@ delete(Tree* root, char* nextFolder, char* path)
 
 */
 
-/*
-// Clean folder: Run this after delete to remove empty folders.
-int
-clean_folders(Tree* root)
-{
-    //Return 1 if folder empty, return 0 if folder is not empty.
-    if (root->cnum == 0 && root->nodeType == NodeType_tree) {
-        return 1;
-    }
-    else if (root->nodeType == NodeType_blob) {
-        return 0;
-    }
-    else { // If folder is not empty, keep on recurring
-        for (int i = 0; i < root->cnum; ++i) {
-            if 
-        }
-    }
-}
-*/

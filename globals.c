@@ -33,8 +33,6 @@ find_dot_dir(void)
     cwd = realloc(cwd, strlen(cwd)+20);
 
     do { // this is beyond retarded.
-        /* printf("%s\n", cwd); */
-
         /* check if current dir is 9it working */
         strcat(cwd, "/.9it/9IT"); 
         if (access(cwd, F_OK) == 0) {
