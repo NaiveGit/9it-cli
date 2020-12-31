@@ -17,8 +17,6 @@ main(int argc, char** argv)
     
     argp_parse(&global_argp, argc, argv, ARGP_IN_ORDER, 0, 0);
 
-    /* get_dot_dir(); */
-    /* printf("%s\n", get_dot_dir()); */
 
     /* printf("%d\n", read_index()->index_length); */
 
