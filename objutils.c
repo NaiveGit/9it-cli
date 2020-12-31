@@ -269,24 +269,25 @@ read_index(void)
 
     index_array = malloc(entry_count*sizeof(IndexItem));
     for (int i = 0; i < entry_count; i++) {
-        IndexItem index_item;
+        IndexItem* index_item;
+        index_item = malloc(sizeof(IndexItem));
 
-        fread(&index_item.c_time, sizeof(time_t), 1, index_file);
-        fread(&index_item.m_time, sizeof(time_t), 1, index_file);
-        fread(&index_item.dev, sizeof(uint32_t), 1, index_file);
-        fread(&index_item.ino, sizeof(uint32_t), 1, index_file);
-        fread(&index_item.mode, sizeof(uint32_t), 1, index_file);
-        fread(&index_item.uid, sizeof(uint32_t), 1, index_file);
-        fread(&index_item.gid, sizeof(uint32_t), 1, index_file);
-        fread(&index_item.file_size, sizeof(uint32_t), 1, index_file);
+        fread(&index_item->c_time, sizeof(time_t), 1, index_file);
+        fread(&index_item->m_time, sizeof(time_t), 1, index_file);
+        fread(&index_item->dev, sizeof(uint32_t), 1, index_file);
+        fread(&index_item->ino, sizeof(uint32_t), 1, index_file);
+        fread(&index_item->mode, sizeof(uint32_t), 1, index_file);
+        fread(&index_item->uid, sizeof(uint32_t), 1, index_file);
+        fread(&index_item->gid, sizeof(uint32_t), 1, index_file);
+        fread(&index_item->file_size, sizeof(uint32_t), 1, index_file);
 
         unsigned char* hash = malloc(SHA_DIGEST_LENGTH*sizeof(unsigned char));        
         fread(hash, sizeof(unsigned char), SHA_DIGEST_LENGTH, index_file);
-        index_item.hash = hash;
+        index_item->hash = hash;
 
-        index_item.file_path = read_until_null(index_file);       
+        index_item->file_path = read_until_null(index_file);       
 
-        index_array[i] = index_item;
+        index_array[i] = *index_item;
     }
     fclose(index_file);
 
@@ -294,6 +295,9 @@ read_index(void)
     index.index_items = index_array;
     /* make a copy of the index struct and return it */
     return_index = malloc(sizeof(Index));
+    if (return_index == NULL) {
+        printf("Malloc failed \n");
+    }
     memcpy(return_index, &index, sizeof(Index));
 
     return return_index;

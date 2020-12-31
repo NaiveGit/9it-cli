@@ -3,7 +3,7 @@
 #include "headers/fileutils.h"
 #include "headers/objutils.h"
 #include "headers/commands.h"
-
+#include "headers/nodeutils.h"
 static void parse_command(char* cmd_name, Argp* argp, ArgpState* state);
 
 static error_t parse_global_opt(int key, char* arg, ArgpState* state);
@@ -154,6 +154,7 @@ parse_commit_opt(int key, char* arg, ArgpState* state)
     switch (key) {
         case 'm':
             printf("Called commit with -m flag with message: %s\n", arg);
+            commit_tree();
             break;
         default:
             return ARGP_ERR_UNKNOWN;
