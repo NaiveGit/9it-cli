@@ -8,19 +8,19 @@ mkfolder(char* root, char* dir_name)
 {
     struct stat sb;//For folder
     //Full folder path
-    char temp[100] = "";
-    strcat(temp, root);
-    strcat(temp, dir_name);
+    char* temp;
+
+    temp = cat_str(2, root, dir_name);
 
     //Begin Recursion
     char *ptr = strtok(temp,"/");
-    char recur[100] = "";
+    char recur[strlen(temp)+1];
+    recur[0] = 0;
     
     while (ptr!=NULL){
         strcat(recur,ptr);
         strcat(recur,"/");
-        // printf("Folder loc: '%s'\n",recur);
-        // printf("'%d'",stat(recur,&sb));
+
         if (stat(recur,&sb) != 0){//if folder does not exist, then execute command. Otherwise, skip it.
             #ifdef _WIN32
             if (_mkdir(recur) != 0) {
@@ -37,6 +37,8 @@ mkfolder(char* root, char* dir_name)
         }
         ptr = strtok(NULL,"/");
     }
+
+    free(temp);
 
     return 0;
 }
@@ -226,9 +228,13 @@ get_cwd(void)
     char cwd[PATH_MAX+2];
     char* out;
 
-    getcwd(cwd, sizeof(cwd));
+    if (getcwd(cwd, sizeof(cwd)) == NULL) {
+        printf("Unable to get cwd\n");
+        exit(1);
+    }
 
     out = malloc(strlen(cwd)+1);
     memcpy(out, cwd, strlen(cwd)+1);
 
+    return out;
 }
