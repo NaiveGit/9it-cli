@@ -58,9 +58,9 @@ typedef struct Index {
 } Index;
 
 /* write objects */
-extern char* write_blob(char* file_path);
-extern char* write_tree(Tree* tree);
-extern char* write_commit(Commit* commit);
+extern unsigned char* write_blob(char* file_path);
+extern unsigned char* write_tree(Tree* tree);
+extern unsigned char* write_commit(Commit* commit);
 
 /* read objects */
 extern char* read_tree(Tree* root);
@@ -69,9 +69,8 @@ extern char* read_tree(Tree* root);
 extern void hash_tree(Tree* tree); // writes hash to tree's hash field
 extern void hash_commit(Commit* commit);
 
-/* index */
-extern Index* read_index(void);
 extern int add_index_item(char* file_path);
+extern Index* read_index(void);
 
 extern unsigned char* get_head_commit(void);
 extern unsigned char* read_ref(char* branch_name);

@@ -2,7 +2,7 @@
 #include "headers/fileutils.h"
 #include "headers/globals.h"
 
-char*
+unsigned char*
 write_blob(char* file_path)
 {
     FILE* file;
@@ -35,7 +35,7 @@ write_blob(char* file_path)
     return hexstring;
 }
 
-char*
+unsigned char*
 write_tree(Tree* tree)
 { // TODO: make return clean up less cancer
     char* hexstring;
@@ -85,7 +85,7 @@ write_tree(Tree* tree)
     return hexstring;
 }
 
-char*
+unsigned char*
 write_commit(Commit* commit)
 { /* writes commit to objects  */
     
@@ -189,6 +189,7 @@ read_tree(Tree* root)
 
 }
 
+
 void
 hash_tree(Tree* tree)
 { 
@@ -247,62 +248,6 @@ hash_commit(Commit* commit)
     fclose(temp_stream);
 }
 
-Index*
-read_index(void)
-{
-    Index index;
-    Index* return_index;
-    IndexItem* index_array;
-    FILE* index_file;
-    int entry_count;
-
-    index_file = fopen(INDEX_FILE, "rb");
-    if (index_file == NULL) { perror(NULL); return NULL; }
-
-    /* prob check if index file has right format and such */
-    /* perror("Index file may be corrupt"); */
-    /* verify checksum and such */
-
-    /* read the header */
-    fseek(index_file, INDEX_HEADER_ENTRY_START, SEEK_SET);
-    fread(&entry_count, INDEX_HEADER_ENTRY_LENGTH, 1, index_file);
-
-    index_array = malloc(entry_count*sizeof(IndexItem));
-    for (int i = 0; i < entry_count; i++) {
-        IndexItem* index_item;
-        index_item = malloc(sizeof(IndexItem));
-
-        fread(&index_item->c_time, sizeof(time_t), 1, index_file);
-        fread(&index_item->m_time, sizeof(time_t), 1, index_file);
-        fread(&index_item->dev, sizeof(uint32_t), 1, index_file);
-        fread(&index_item->ino, sizeof(uint32_t), 1, index_file);
-        fread(&index_item->mode, sizeof(uint32_t), 1, index_file);
-        fread(&index_item->uid, sizeof(uint32_t), 1, index_file);
-        fread(&index_item->gid, sizeof(uint32_t), 1, index_file);
-        fread(&index_item->file_size, sizeof(uint32_t), 1, index_file);
-
-        unsigned char* hash = malloc(SHA_DIGEST_LENGTH*sizeof(unsigned char));        
-        fread(hash, sizeof(unsigned char), SHA_DIGEST_LENGTH, index_file);
-        index_item->hash = hash;
-
-        index_item->file_path = read_until_null(index_file);       
-
-        index_array[i] = *index_item;
-    }
-    fclose(index_file);
-
-    index.index_length = entry_count;
-    index.index_items = index_array;
-    /* make a copy of the index struct and return it */
-    return_index = malloc(sizeof(Index));
-    if (return_index == NULL) {
-        printf("Malloc failed \n");
-    }
-    memcpy(return_index, &index, sizeof(Index));
-
-    return return_index;
-}
-
 int
 add_index_item(char* file_path)
 {
@@ -359,6 +304,62 @@ add_index_item(char* file_path)
     fclose(index_file);
 
     return 0;
+}
+
+Index*
+read_index(void)
+{
+    Index index;
+    Index* return_index;
+    IndexItem* index_array;
+    FILE* index_file;
+    int entry_count;
+
+    index_file = fopen(INDEX_FILE, "rb");
+    if (index_file == NULL) { perror(NULL); return NULL; }
+
+    /* prob check if index file has right format and such */
+    /* perror("Index file may be corrupt"); */
+    /* verify checksum and such */
+
+    /* read the header */
+    fseek(index_file, INDEX_HEADER_ENTRY_START, SEEK_SET);
+    fread(&entry_count, INDEX_HEADER_ENTRY_LENGTH, 1, index_file);
+
+    index_array = malloc(entry_count*sizeof(IndexItem));
+    for (int i = 0; i < entry_count; i++) {
+        IndexItem* index_item;
+        index_item = malloc(sizeof(IndexItem));
+
+        fread(&index_item->c_time, sizeof(time_t), 1, index_file);
+        fread(&index_item->m_time, sizeof(time_t), 1, index_file);
+        fread(&index_item->dev, sizeof(uint32_t), 1, index_file);
+        fread(&index_item->ino, sizeof(uint32_t), 1, index_file);
+        fread(&index_item->mode, sizeof(uint32_t), 1, index_file);
+        fread(&index_item->uid, sizeof(uint32_t), 1, index_file);
+        fread(&index_item->gid, sizeof(uint32_t), 1, index_file);
+        fread(&index_item->file_size, sizeof(uint32_t), 1, index_file);
+
+        unsigned char* hash = malloc(SHA_DIGEST_LENGTH*sizeof(unsigned char));        
+        fread(hash, sizeof(unsigned char), SHA_DIGEST_LENGTH, index_file);
+        index_item->hash = hash;
+
+        index_item->file_path = read_until_null(index_file);       
+
+        index_array[i] = *index_item;
+    }
+    fclose(index_file);
+
+    index.index_length = entry_count;
+    index.index_items = index_array;
+    /* make a copy of the index struct and return it */
+    return_index = malloc(sizeof(Index));
+    if (return_index == NULL) {
+        printf("Malloc failed \n");
+    }
+    memcpy(return_index, &index, sizeof(Index));
+
+    return return_index;
 }
 
 unsigned char*

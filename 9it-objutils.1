@@ -1,12 +1,41 @@
 .TH 9IT-OBJUTILS 3 2020-12-31 9it-0.1
 .SH NAME
-write_blob, write_tree
+write_blob, write_tree, write_commit, read_tree, hash_tree, hash_commit, read_index, add_index_item, get_head_commit, read_ref, log_tree, log_commit
 .SH DESCRIPTION
 This is the developer man page for the header file objutils.h. For 9it usage, please refer to 9it (1).
 .SH SYNOPSIS
+.nf
 #include "headers/objutils.h"
 
-\fBchar* write_blob(char* file_path);\fP
-\fBchar* write_tree(Tree* tree);\fP
-char* write_commit(Commit* commit);
+\fBunsigned char* write_blob(char* \fIfile_path\fR);\fP
+\fBunsigned char* write_tree(Tree* \fItree\fR);\fP
+\fBunsigned char* write_commit(Commit* \fIcommit\fR);\fP
+
+\fBchar* read_tree(Tree* \fIroot\fR);\fP
+
+\fBvoid hash_tree(Tree* \fItree\fR);\fP
+\fBvoid hash_commit(Commit* \fIcommit\fR);\fP
+
+\fBint add_index_item(char* \fIfile_path\fR);\fP
+\fBIndex* read_index(void);\fP
+
+\fBunsigned char* get_head_commit(void);\fP
+\fBunsigned char* read_ref(char* \fIbranch_name\fR);\fP
+
+\fBvoid log_tree(Tree* \fItree\fR);\fP
+\fBvoid log_commit(Commit* \fIcommit\fR);\fP
+
+.fi
 .SH DESCRIPTION
+\fBwrite_blob\fP hashes and compresses a file and writes the blob into the 9it objects directory. \fBwrite_tree\fP and \fBwrite_commit\fP are similar but they don't perform any hashing. The caller must hash the structs themselves (perhaps by calling \fBhash_tree\fP and \fBhash_commit\fP) and set the hash field in the respective structs. For more information on the structure of the binary that is written into objects, see 9it-format (5).
+
+\fBread_tree\fP requires that the hash field of the Tree that is passed in to be set, as that is what it uses to find the file to read. If the tree is the root, the name field is also not set. Also, this function is NOT recursive, it will partially create the children of the tree that is read. Specifically, the name and hash of the children will be set, but the children of the children will be empty regardless if they have children or not. The caller must iterate through the children and call this function on them.
+
+\fBhash_tree\fP and \fBhash_commit\fP will hash the respective structs and set the hash field of the structs as a result. As such, there is no return value.
+
+\fBlog_tree\fP and \fBlog_commit\fP are simple utility functions that print out all the fields of the respective struct.
+
+.SH RETURN VALUE
+On success \fBwrite_blob\fP, \fBwrite_tree\fP \fBwrite_commit\fP, \fBread_tree\fP return a malloced hexstring of length SHA_DIGEST_LENGTH that corresponds to the hash of the object that was written. This hexstring is not null terminated and needs to be freed. If the object already existed before the write, the hexstring is still returned and no write is done. On error, NULL is returned.
+
+
