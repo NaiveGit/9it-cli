@@ -311,11 +311,14 @@ read_index(void)
 {
     Index index;
     Index* return_index;
+    char* index_path;
     IndexItem* index_array;
     FILE* index_file;
     int entry_count;
 
-    index_file = fopen(INDEX_FILE, "rb");
+    index_path = cat_str(2, get_dot_dir(), INDEX_FILE);
+    index_file = fopen(index_path, "rb");
+    free(index_path);
     if (index_file == NULL) { perror(NULL); return NULL; }
 
     /* prob check if index file has right format and such */

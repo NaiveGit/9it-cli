@@ -20,5 +20,7 @@ main(int argc, char** argv)
     /* get_dot_dir(); */
     /* printf("%s\n", get_dot_dir()); */
 
+    /* printf("%d\n", read_index()->index_length); */
+
     return 0;
 }
