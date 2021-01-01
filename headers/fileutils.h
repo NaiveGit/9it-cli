@@ -11,10 +11,6 @@
 #include <openssl/sha.h>
 #include <zlib.h>
 
-#ifdef _WIN32
-#include <conio.h>
-#endif
-
 /* init related stuff */
 extern int mkfolder(char* root, char* dir_name);
 
@@ -31,6 +27,7 @@ extern void write_null(FILE* stream);
 
 /* string stuff */
 extern char* cat_str(int num, ...);
+extern char* rcat_str(int num, char* first, ...);
 extern int strend(char* s, char* t);
 
 /* directory stuff */

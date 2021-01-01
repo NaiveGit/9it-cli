@@ -22,18 +22,10 @@ mkfolder(char* root, char* dir_name)
         strcat(recur,"/");
 
         if (stat(recur,&sb) != 0){//if folder does not exist, then execute command. Otherwise, skip it.
-            #ifdef _WIN32
-            if (_mkdir(recur) != 0) {
-                printf("Error creating directory %s\n", recur);
-                return -1;
-            }
-
-            #else
             if (mkdir(recur, 0777) == -1) {
                 printf("Error creating directory %s\n", recur);
                 return -1;
             } 
-            #endif
         }
         ptr = strtok(NULL,"/");
     }
@@ -222,6 +214,32 @@ cat_str(int num, ...) // mallocs
     return out;
 }
 
+char*
+rcat_str(int num, char* first, ...) // resizes
+{
+    va_list args;
+    int length;
+    char* cur;
+
+    num -= 1;
+
+    va_start(args, first);
+
+    length = strlen(first);
+    first = realloc(first, length+1);
+
+    for (int i = 0; i < num; i++) {
+        cur = va_arg(args, char*);
+        length += strlen(cur);
+        first = realloc(first, length);
+        strcat(first, cur);
+    }
+
+    va_end(args);
+
+    return first;
+}
+
 
 int // from https://codereview.stackexchange.com/questions/54722/determine-if-one-string-occurs-at-the-end-of-another/54724
 strend(char* s, char* t)
@@ -252,7 +270,7 @@ get_cwd(void)
     return out;
 }
 
-char*
+char* // returns cwd relative to repo root
 get_local_path(void)
 {
     char* cwd;

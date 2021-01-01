@@ -47,20 +47,41 @@ init(char* root)
 
 int
 add(char* local_path)
-{
+{ // need to ignore .9it folder and handle .
+
     char* relative_path;
-    int relative_length;
+    Stat file_stat;
 
     /* make local_path relative to repo root */
     relative_path = get_local_path();
-    relative_length = strlen(relative_path)+strlen(local_path);
-    relative_path = realloc(relative_path, relative_length+1);
-    strcat(relative_path, local_path);
+    relative_path = rcat_str(2, relative_path, local_path);
 
     /* check if dir or file */
-    printf("Adding file with path %s\n", relative_path);
-    add_index_item(relative_path);
+    if (lstat(local_path, &file_stat) == -1) {
+        perror(NULL);
+        return -1;
+    }
 
+    if (S_ISDIR(file_stat.st_mode) == 0) { // not a dir
+        add_index_item(relative_path);
+
+    } else {
+
+        /* append a slash if it's not there */
+        if (strend(relative_path, "/") == 0) {
+            rcat_str(2, relative_path, "/");
+        } 
+
+        /* handle . */
+        if (strcmp(relative_path, "./") == 0) {
+            relative_path = realloc(relative_path, 1);
+            relative_path[0] = 0;
+        }
+
+        add_index_dir(relative_path);
+
+    }
+     
     free(relative_path);
 
     return 0;
@@ -97,5 +118,11 @@ commit(char* commit_msg)
 
     /* clear index */
 
+    return 0;
+}
+
+int
+status(void)
+{
     return 0;
 }

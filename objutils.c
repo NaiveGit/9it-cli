@@ -312,10 +312,50 @@ add_index_item(char* file_path)
     return 0;
 }
 
-int
-add_index_dir(char* file_path)
-{
-    /* make an actual directory is given */ 
+int // take in path relative to repo root
+add_index_dir(char* dir_path)
+{  // maybe check that dir_path is an acc dir
+    char* absolute_path;
+    DIR* dir;
+    Dirent* dirent;
+    char* relative_child_path;
+
+    absolute_path = get_repo_root();
+    absolute_path = realloc(absolute_path, strlen(absolute_path)+strlen(dir_path)+1);
+    strcat(absolute_path, dir_path);
+    
+    /* prob need to handle dir_path = "", convert to "." */
+    dir = opendir(absolute_path);
+    if (dir == NULL) {
+        perror(NULL);
+        return -1; // need to clean up if add_dir fails halfway
+    }
+    free(absolute_path);
+
+    while ((dirent = readdir(dir)) != NULL) {
+
+        /* ignore . and .. and .9it */
+        if (strcmp(dirent->d_name, ".9it") == 0) continue; 
+        if (strcmp(dirent->d_name, "..") == 0) continue; 
+        if (strcmp(dirent->d_name, ".") == 0) continue; 
+
+        /* add files */
+        relative_child_path = cat_str(2, dir_path, dirent->d_name);
+
+        if (dirent->d_type == DT_DIR) { // recurse further
+            /* append a slash */
+            rcat_str(2, relative_child_path, "/");
+            add_index_dir(relative_child_path);
+
+        } else if (dirent->d_type == DT_REG) { // its a normal folder, add it
+            add_index_item(relative_child_path);
+            
+        } // not handling smlinks and other file types
+
+        free(relative_child_path);
+    }
+
+    closedir(dir);
 
     return 0;
 }

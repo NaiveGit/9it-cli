@@ -8,10 +8,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <dirent.h>
 
 #define NODETYPE_SIZE 1
 
 typedef struct stat Stat;
+typedef struct dirent Dirent; 
 
 typedef enum {
     NodeType_blob = 0,
