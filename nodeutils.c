@@ -101,7 +101,6 @@ Tree*
 commit_tree(void)
 {
    Tree* root; 
-   printf("Hello \n");
     
     //First check if head exists
     unsigned char* recent_commit = get_head_commit();
@@ -113,8 +112,6 @@ commit_tree(void)
         // LOGIC
     }
     else {
-        printf("Making the tree for the first tiem! \n");
-        printf("Index length: %d \n",read_index()->index_length);
         root =  init_tree(read_index());
         /*
         Index index;
@@ -137,10 +134,10 @@ commit_tree(void)
         root = init_tree(&index);
         */
     }
-    printf("Begin hashing! \n");
     hash_all(root);
-    printf("Begin writing the tree! \n");
     write_full_tree(root);
+
+    return root;
 }
 
 int

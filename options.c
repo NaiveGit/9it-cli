@@ -158,6 +158,24 @@ parse_commit_opt(int key, char* arg, ArgpState* state)
             commit_tree(); 
             commit(arg);
             break;
+
+        case ARGP_KEY_NO_ARGS: 
+            
+            if (state->argc == 1) {
+                char* editor;
+
+                editor = getenv("EDITOR");
+                if (editor == NULL) {
+                    printf("Please set the EDITOR environment variable or run 9it commit -m [message]");
+                    exit(1);
+                }
+
+                /* open buffer with editor */
+
+            }
+            
+            break;
+
         default:
             return ARGP_ERR_UNKNOWN;
     }

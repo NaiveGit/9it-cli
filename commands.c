@@ -2,6 +2,7 @@
 #include "headers/objutils.h"
 #include "headers/globals.h"
 #include "headers/commands.h"
+#include "headers/nodeutils.h"
 
 int 
 init(char* root) 
@@ -74,7 +75,7 @@ commit(char* commit_msg)
     unsigned char* parent_commit_hash;
 
     /* grab the index tree */
-
+    root_tree = commit_tree();
 
     /* get user name */
     username = getenv(NINEIT_USERNAME);
@@ -91,12 +92,10 @@ commit(char* commit_msg)
     new_commit.parent_commit_hash = get_head_commit();
 
     /* write commit */
-    /* hash_commit(&new_commit); */ 
-    /* write_commit(&new_commit); */
+    hash_commit(&new_commit); 
+    write_commit(&new_commit);
 
     /* clear index */
-
-
 
     return 0;
 }
