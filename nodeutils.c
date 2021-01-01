@@ -173,8 +173,9 @@ file_exists(char* path)
     struct stat sb;
     char* filepath;
     filepath = get_repo_root();
-    filepath = realloc(filepath,strlen(path));
+    filepath = realloc(filepath,(strlen(filepath)+strlen(path)+1));
     strcat(filepath,path);
+    printf("This is the filepath: %s \n",filepath);
     if (stat(filepath,&sb) == 0) { // File exists
         return 1;
     }
