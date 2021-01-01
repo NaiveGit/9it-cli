@@ -2,7 +2,7 @@
 #include "headers/fileutils.h"
 #include "headers/globals.h"
 
-unsigned char*
+char*
 write_blob(char* file_path)
 {
     FILE* file;
@@ -35,7 +35,7 @@ write_blob(char* file_path)
     return hexstring;
 }
 
-unsigned char*
+char*
 write_tree(Tree* tree)
 { // TODO: make return clean up less cancer
     char* hexstring;
@@ -66,7 +66,9 @@ write_tree(Tree* tree)
     }
 
     /* write the number of entries first */
-    fwrite(&tree->cnum, sizeof(uint32_t), 1, tree_file);
+    fwrite(TREE_DEFAULT_HEADER, sizeof(char), HEADER_LENGTH, tree_file);
+    fseek(tree_file, HEADER_ENTRY_NUM_START, SEEK_SET);
+    fwrite(&tree->cnum, HEADER_ENTRY_NUM_LENGTH, 1, tree_file);
 
     for (int c = 0; c < tree->cnum; c++) {
 
@@ -85,7 +87,7 @@ write_tree(Tree* tree)
     return hexstring;
 }
 
-unsigned char*
+char*
 write_commit(Commit* commit)
 { /* writes commit to objects  */
     
@@ -112,12 +114,12 @@ write_commit(Commit* commit)
     }
 
     /* write n shit */
-    write_hash(commit_file, commit->hash);
+    fwrite(COMMIT_DEFAULT_HEADER, sizeof(char), HEADER_LENGTH, commit_file);
     write_hash(commit_file, commit->root_tree->hash);
 
-    fwrite(&commit->committer, 1, strlen(commit->committer), commit_file);
+    fwrite(commit->committer, sizeof(char), strlen(commit->committer), commit_file);
     fwrite(&commit->timestamp, sizeof(time_t), 1, commit_file);
-    fwrite(&commit->msg, 1, strlen(commit->msg), commit_file);
+    fwrite(commit->msg, sizeof(char), strlen(commit->msg), commit_file);
     if (commit->parent_commit_hash != NULL) { // not the first commit
         write_hash(commit_file, commit->parent_commit_hash);
     }
@@ -153,6 +155,7 @@ read_tree(Tree* root)
     }
     
     /* get number of entries first */
+    fseek(tree_file, HEADER_ENTRY_NUM_START, SEEK_SET);
     fread(&root->cnum, sizeof(uint32_t), 1, tree_file);
     /* ROOT HASH IS NOT INITIALIZED!! */
     /* NAME IS NOT INITIALIZED BY THIS FUNCTION!! */
@@ -279,11 +282,11 @@ add_index_item(char* file_path)
     free(out_path);
 
     /* increment number of index entries in header */
-    fseek(index_file, INDEX_HEADER_ENTRY_START, SEEK_SET);
-    fread(&index_header_entries, INDEX_HEADER_ENTRY_LENGTH, 1, index_file);
+    fseek(index_file, HEADER_ENTRY_NUM_START, SEEK_SET);
+    fread(&index_header_entries, HEADER_ENTRY_NUM_LENGTH, 1, index_file);
     index_header_entries += 1;
-    fseek(index_file, INDEX_HEADER_ENTRY_START, SEEK_SET);
-    fwrite(&index_header_entries, INDEX_HEADER_ENTRY_LENGTH, 1, index_file);
+    fseek(index_file, HEADER_ENTRY_NUM_START, SEEK_SET);
+    fwrite(&index_header_entries, HEADER_ENTRY_NUM_LENGTH, 1, index_file);
     
     /* append new binary to end of index */
     fseek(index_file, 0, SEEK_END);
@@ -337,8 +340,8 @@ read_index(void)
     /* verify checksum and such */
 
     /* read the header */
-    fseek(index_file, INDEX_HEADER_ENTRY_START, SEEK_SET);
-    fread(&entry_count, INDEX_HEADER_ENTRY_LENGTH, 1, index_file);
+    fseek(index_file, HEADER_ENTRY_NUM_START, SEEK_SET);
+    fread(&entry_count, HEADER_ENTRY_NUM_LENGTH, 1, index_file);
 
     index_array = malloc(entry_count*sizeof(IndexItem));
     for (int i = 0; i < entry_count; i++) {

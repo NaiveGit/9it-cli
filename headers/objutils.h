@@ -58,9 +58,9 @@ typedef struct Index {
 } Index;
 
 /* write objects */
-extern unsigned char* write_blob(char* file_path);
-extern unsigned char* write_tree(Tree* tree);
-extern unsigned char* write_commit(Commit* commit);
+extern char* write_blob(char* file_path);
+extern char* write_tree(Tree* tree);
+extern char* write_commit(Commit* commit);
 
 /* read objects */
 extern char* read_tree(Tree* root);

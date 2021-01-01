@@ -32,7 +32,7 @@ init(char* root)
     char* head_file = cat_str(2, root, HEAD_FILE);
     char* ident_file = cat_str(2, root, IDENT_FILE);
 
-    write_to_file(index_file, INDEX_DEFAULT_HEADER, INDEX_HEADER_LENGTH); //index file
+    write_to_file(index_file, INDEX_DEFAULT_HEADER, HEADER_LENGTH); //index file
     write_to_file(head_file, HEAD_DEFAULT, strlen(HEAD_DEFAULT)+1);
     write_to_file(ident_file, "", 0);
 
@@ -83,7 +83,7 @@ commit(char* commit_msg)
         printf("Please set the NINEIT_USERNAME environment variable.\n");
         exit(1);
     }
-    
+
     /* make commit */
     new_commit.root_tree = root_tree;
     new_commit.committer = username;
