@@ -1,4 +1,5 @@
 #include "headers/fileutils.h"
+#include "headers/objutils.h"
 #include "headers/globals.h"
 #include "headers/commands.h"
 
@@ -57,6 +58,7 @@ add (char* local_path)
 
     /* check if dir or file */
     printf("Adding file with path %s\n", relative_path);
+    add_index_item(relative_path);
 
     free(relative_path);
 
