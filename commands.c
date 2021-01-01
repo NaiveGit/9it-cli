@@ -45,7 +45,7 @@ init(char* root)
 }
 
 int
-add (char* local_path)
+add(char* local_path)
 {
     char* relative_path;
     int relative_length;
@@ -61,6 +61,42 @@ add (char* local_path)
     add_index_item(relative_path);
 
     free(relative_path);
+
+    return 0;
+}
+
+int
+commit(char* commit_msg)
+{ // tree must be hashed and ready
+    Commit new_commit;
+    Tree* root_tree;
+    char* username;
+    unsigned char* parent_commit_hash;
+
+    /* grab the index tree */
+
+
+    /* get user name */
+    username = getenv(NINEIT_USERNAME);
+    if (username == NULL) {
+        printf("Please set the NINEIT_USERNAME environment variable.\n");
+        exit(1);
+    }
+    
+    /* make commit */
+    new_commit.root_tree = root_tree;
+    new_commit.committer = username;
+    new_commit.timestamp = time(0);
+    new_commit.msg = commit_msg;
+    new_commit.parent_commit_hash = get_head_commit();
+
+    /* write commit */
+    /* hash_commit(&new_commit); */ 
+    /* write_commit(&new_commit); */
+
+    /* clear index */
+
+
 
     return 0;
 }

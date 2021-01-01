@@ -31,11 +31,11 @@ typedef struct Commit Commit;
 struct Commit {
     unsigned char* hash;
     Tree* root_tree;
-    /* char* author; */ /* we dont need author prob */
+    /* char* author; /1* we dont need author prob *1/ */
     char* committer; // read from enviroment variables
     time_t timestamp;
     char* msg;
-    Commit* parent_commit;
+    unsigned char* parent_commit_hash;
 };
 
 typedef struct IndexItem {

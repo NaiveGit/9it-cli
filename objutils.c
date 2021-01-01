@@ -118,8 +118,8 @@ write_commit(Commit* commit)
     fwrite(&commit->committer, 1, strlen(commit->committer), commit_file);
     fwrite(&commit->timestamp, sizeof(time_t), 1, commit_file);
     fwrite(&commit->msg, 1, strlen(commit->msg), commit_file);
-    if (commit->parent_commit != NULL) { // not the first commit
-        fwrite(&commit->parent_commit->hash, 1, strlen(commit->parent_commit->hash), commit_file);
+    if (commit->parent_commit_hash != NULL) { // not the first commit
+        write_hash(commit_file, commit->parent_commit_hash);
     }
 
     /* clean up */
@@ -209,10 +209,11 @@ hash_tree(Tree* tree)
 
         fwrite(&child_tree.nodeType, NODETYPE_SIZE, 1, temp_stream);
         write_hash(temp_stream, child_tree.hash);
-        fwrite(&child_tree.name, 1, strlen(child_tree.name), temp_stream);
+        fwrite(&child_tree.name, sizeof(char), strlen(child_tree.name), temp_stream);
 
     }
 
+    fseek(temp_stream, 0, SEEK_SET);
     tree->hash = hash_stream(temp_stream);
 
     fclose(temp_stream);
@@ -238,10 +239,11 @@ hash_commit(Commit* commit)
     fwrite(&commit->committer, 1, strlen(commit->committer), temp_stream);
     fwrite(&commit->timestamp, sizeof(time_t), 1, temp_stream);
     fwrite(&commit->msg, 1, strlen(commit->msg), temp_stream);
-    if (commit->parent_commit->hash != NULL) { // only if its not first commit
-        write_hash(temp_stream, commit->parent_commit->hash);
+    if (commit->parent_commit_hash != NULL) { // only if its not first commit
+        write_hash(temp_stream, commit->parent_commit_hash);
     }
 
+    fseek(temp_stream, 0, SEEK_SET);
     commit->hash = hash_stream(temp_stream);
 
     fclose(temp_stream);

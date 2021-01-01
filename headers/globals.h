@@ -33,6 +33,9 @@
 /* head stuff */
 #define HEAD_DEFAULT "senpai"
 
+/* Enviros */
+#define NINEIT_USERNAME "NINEIT_USERNAME"
+
 extern const char* get_dot_dir(void);
 extern char* get_repo_root(void);
 extern void set_dot_dir(char* dir);
