@@ -1,62 +1,62 @@
 #include "headers/nodeutils.h"
 
-void add_to(Tree* root, Tree* new_node, char* nextFolder,char* path);
-int find_folder(Tree* root, char* path);
+// Main functions:
 Tree* commit_tree(void);
-void print_tree(Tree* root);
-void hash_all(Tree* root);
-Tree* duplicate_tree(unsigned char* hash, char* name, Tree* root);
-void delete(Tree* root, char* nextFolder, char* path);
+void add_to(Tree* root, IndexItem current);
+void add_to_helper(Tree* root, Tree* new_node, char* nextFolder,char* path);
+void delete_to(Tree* root, IndexItem current);
+void delete_to_helper(Tree* root, char* nextFolder, char* path);
+
+//Making the Tree:
+Tree* init_tree(Tree* root);
 void write_full_tree(Tree* root);
+Tree* duplicate_tree(unsigned char* hash, char* name, Tree* root);
+void hash_all(Tree* root);
+
+// Helper functions:
+int find_child(Tree* root, char* path);
+int file_exists(char* path);
+void print_tree(Tree* root);
 
 Tree*
-init_tree(Index* index)
+init_tree(Tree* root)
 {
     printf("Init Tree \n");
-    Tree* root;
-    root = malloc(sizeof(Tree));
     root->nodeType = NodeType_tree;
     root->name = "";
     root->children = malloc(sizeof(Tree));
     root->cnum = 0;
-    struct stat sb;
-
-    // Loop thru the index and make folders n shit.
-    printf("Loop Index: \n"); 
-    for (int i = 0; i < index->index_length; i++) {
-        printf("Looping at: %d, currenty inserting: %s \n",i,index->index_items[i].file_path);
-        IndexItem current = index->index_items[i];
-        char* filep = malloc((strlen(current.file_path) + 2)*sizeof(char));
-        strcpy(filep,current.file_path);
-        char* path = malloc((strlen(current.file_path) + 2)*sizeof(char));
-        path[0] = 0; 
-
-        char* nextFolder = strtok(filep,"/");
-
-        // Node we're adding to tree
-        // Making the node
-        Tree* new_node;
-        new_node = malloc(sizeof(Tree));
-        new_node->hash = current.hash;
-        new_node->nodeType = NodeType_blob;
-        new_node->name = current.file_path;
-        new_node->children = malloc(sizeof(Tree));
-        new_node->cnum = 0;
-        add_to(root, new_node, nextFolder,path);
-        free(path);
-    }
-
     return root;
 }
 // For adding files
 void
-add_to(Tree* root, Tree* new_node, char* nextFolder,char* path)
+add_to(Tree* root, IndexItem current)
+{
+    char* filep = malloc((strlen(current.file_path) + 2)*sizeof(char));
+    strcpy(filep,current.file_path);
+    char* path = malloc((strlen(current.file_path) + 2)*sizeof(char));
+    path[0] = 0; 
+    char* nextFolder = strtok(filep,"/");
+    // Making the node
+    Tree* new_node;
+    new_node = malloc(sizeof(Tree));
+    new_node->hash = current.hash;
+    new_node->nodeType = NodeType_blob;
+    new_node->name = current.file_path;
+    new_node->children = malloc(sizeof(Tree));
+    new_node->cnum = 0;
+    add_to_helper(root, new_node, nextFolder,path);
+    free(path);
+}
+
+void
+add_to_helper(Tree* root, Tree* new_node, char* nextFolder,char* path)
 {
     strcat(path,nextFolder);
     if (strcmp(path,new_node->name) != 0) { // If still going to path 
         strcat(path,"/");
         // If folder doesn't exist, make it
-        int folderpos = find_folder(root,path);
+        int folderpos = find_child(root,path);
         nextFolder = strtok(NULL,"/");
         if (folderpos == -1) {
             // Make folder
@@ -67,24 +67,37 @@ add_to(Tree* root, Tree* new_node, char* nextFolder,char* path)
             new_folder->name = fpath;
             new_folder->children = malloc(0);
             new_folder->cnum = 0;
-            // print_tree(new_folder);
             // Add folder and recur
             root->cnum+=1;
             root->children = realloc(root->children,root->cnum*sizeof(Tree));
             root->children[root->cnum-1] = *(new_folder);
             
-            add_to(&root->children[root->cnum-1],new_node,nextFolder,path);
+            add_to_helper(&root->children[root->cnum-1],new_node,nextFolder,path);
         }
         //Go into folder
         else {
-            add_to(&root->children[folderpos],new_node,nextFolder,path);
+            add_to_helper(&root->children[folderpos],new_node,nextFolder,path);
         }
     }
     else {//We've reached the end, add the object file here. 
-        root->cnum+=1;
-        root->children = realloc(root->children,root->cnum*sizeof(Tree));
-        root->children[root->cnum-1] = *(new_node);//Set it equal
-    }
+        int objectpos = find_child(root,path);
+        if (objectpos == -1) {
+            printf("Object inserted for the first time!\n");
+            root->cnum+=1;
+            root->children = realloc(root->children,root->cnum*sizeof(Tree));
+            root->children[root->cnum-1] = *(new_node);//Set it equal
+        }
+        else { // If the object does exist, check the hashes.
+            if (strcmp(new_node->hash, root->children[objectpos].hash) != 0) {
+                printf("Object is in tree, but is updated! \n");
+                root->children[objectpos] = *new_node;
+            }
+            else {
+                printf("Object has not changed, not changing tree.\n");
+                free(new_node);
+            }
+        }
+   }
 }
 
 void
@@ -94,20 +107,19 @@ print_tree(Tree* root)
 }
 
 // Commit the tree object
+// What if the commit is EMPTY?? 
 Tree*
 commit_tree(void)
 {
-   Tree* root; 
-    
+    Tree* root; 
+    root = malloc(sizeof(Tree)); 
     //First check if head exists
     unsigned char* recent_commit = get_head_commit();
     if (NULL != recent_commit){
         // File exists
-        Tree* root = malloc(sizeof(Tree));
+        printf("Commiting with an existing commit! \n");
         duplicate_tree(recent_commit, "", root);
-
-        // LOGIC
-        // Loop Thru index. Check if file exists irl. If it does, try adding it.
+        
         // When adding, there is a possibility that the hash will be different. In that case, 
         // Find it, and perform logic to check if hash is the same.
         // Don't worry about folders because those will be rehashed. 
@@ -115,7 +127,7 @@ commit_tree(void)
 
     }
     else {
-        root =  init_tree(read_index());
+        init_tree(root);
         /*
         Index index;
         index.index_length = 3;
@@ -137,14 +149,40 @@ commit_tree(void)
         root = init_tree(&index);
         */
     }
+    Index* index;
+    index = read_index();
+    // LOGIC
+    // Loop Thru index. Check if file exists irl. If it does, try adding it.
+    for (int i = 0; i < index->index_length; i++) {
+        IndexItem current = index->index_items[i];
+        
+        if (file_exists(current.file_path) == 1) {
+            add_to(root,current);
+        }
+        else {
+            delete_to(root,current);
+        }
+    }
     hash_all(root);
     write_full_tree(root);
-
     return root;
+}
+int
+file_exists(char* path)
+{
+    struct stat sb;
+    char* filepath;
+    filepath = get_repo_root();
+    filepath = realloc(filepath,strlen(path));
+    strcat(filepath,path);
+    if (stat(filepath,&sb) == 0) { // File exists
+        return 1;
+    }
+    return 0;
 }
 
 int
-find_folder(Tree* root, char* path)
+find_child(Tree* root, char* path)
 {
     Tree* children = root->children;
     for (int i = 0; i<root->cnum; ++i) {
@@ -204,10 +242,43 @@ duplicate_tree(unsigned char* hash, char* name, Tree* root)
 
 // For deleting files
 void
-delete(Tree* root, char* nextFolder, char* path)
+delete_to_helper(Tree* root, char* nextFolder, char* path)
 {
-    
+    strcat(path,nextFolder);
+    int pos = find_child(root,path);
+    nextFolder = strtok(NULL,"/");
+    if (pos == -1) { // Folder or file doesn't exist, means nothing will happen
+        printf("File/Folder doesn't exist so deleted.\n");
+    }
+    else {
+        // If it's a blob, then disconnect.
+        if (root->children[pos].nodeType == NodeType_blob) {
+            printf("Disconnecting node.\n");
+            for (int i = pos; i < (root->cnum-1); i++) {
+                root->children[i] = root->children[i+1];
+            }
+            root->children = realloc(root->children,(root->cnum-1)*sizeof(Tree));
+        }
+        // Otherwise, continue traversing the tree.
+        else {
+            printf("Traversing tree to delete\n");
+            delete_to_helper(&root->children[pos],nextFolder,path);
+        }
+    }
 }
+
+void
+delete_to(Tree* root, IndexItem current)
+{
+    char* filep = malloc((strlen(current.file_path) + 2)*sizeof(char));
+    strcpy(filep,current.file_path);
+    char* path = malloc((strlen(current.file_path) + 2)*sizeof(char));
+    path[0] = 0; 
+    char* nextFolder = strtok(filep,"/");
+    delete_to_helper(root,nextFolder,path);
+    free(path);
+} 
+
 
 void 
 write_full_tree(Tree* root) {
