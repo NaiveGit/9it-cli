@@ -11,6 +11,7 @@
 
 #include "objutils.h"
 #include "globals.h"
+#include "fileutils.h"
 /*
 
 tree
@@ -19,6 +20,6 @@ tree
 
 */
 
-extern void commit_tree(void);
-
+extern Tree* commit_tree(void);
+extern void print_tree(Tree* root);
 #endif

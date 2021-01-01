@@ -2,7 +2,7 @@
 
 void add_to(Tree* root, Tree* new_node, char* nextFolder,char* path);
 int find_folder(Tree* root, char* path);
-void commit_tree(void);
+Tree* commit_tree(void);
 void print_tree(Tree* root);
 void hash_all(Tree* root);
 Tree* duplicate_tree(unsigned char* hash, char* name);
@@ -93,11 +93,11 @@ add_to(Tree* root, Tree* new_node, char* nextFolder,char* path)
 void
 print_tree(Tree* root)
 {
-    printf("Hash: %s \n Name: %s \n Nodetype: %d \n Num of children: %d \n",root->hash,root->name,root->nodeType,root->cnum);
+    printf("Hash: %s \n Name: %s \n Nodetype: %d \n Num of children: %d \n",hash_to_string(root->hash),root->name,root->nodeType,root->cnum);
 }
 
 // Commit the tree object
-void
+Tree*
 commit_tree(void)
 {
    Tree* root; 

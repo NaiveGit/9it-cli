@@ -48,7 +48,7 @@ write_tree(Tree* tree)
      * NUMBER OF CHILDREN, ADD AN ASSERRTION */
 
     hexstring = hash_to_string(tree->hash);
-    out_path = cat_str(3, get_dot_dir, OBJ_DIR, hexstring);
+    out_path = cat_str(3, get_dot_dir(), OBJ_DIR, hexstring);
 
     /* check if tree exists */
     if (access(out_path, F_OK) == 0) { // already exists
