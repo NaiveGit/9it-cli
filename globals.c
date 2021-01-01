@@ -16,6 +16,22 @@ get_dot_dir(void)
     return (const char*)dot_dir;
 }
 
+char*
+get_repo_root(void)
+{
+    char* out;
+
+    out = strdup(get_dot_dir());
+
+    if (strend(out, NON_BARE_DIR)) {
+        *strrchr(out, '/') = 0;
+        *strrchr(out, '/') = 0;
+        strcat(out, "/");
+    }
+
+    return out;
+}
+
 void
 set_dot_dir(char* dir)
 {
@@ -32,6 +48,8 @@ find_dot_dir(void)
     cwd = get_cwd();
     cwd = realloc(cwd, strlen(cwd)+20);
 
+    *strrchr(cwd, '/') = 0;
+
     do { // this is beyond retarded.
         /* check if current dir is 9it working */
         strcat(cwd, "/.9it/9IT"); 
@@ -46,7 +64,6 @@ find_dot_dir(void)
             *(strrchr(cwd, '/')+1) = 0;
             break;
         }
-
         *strrchr(cwd, '/') = 0;
         *strrchr(cwd, '/') = 0;
 

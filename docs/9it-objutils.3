@@ -1,6 +1,6 @@
 .TH 9IT-OBJUTILS 3 2020-12-31 9it-0.1
 .SH NAME
-write_blob, write_tree, write_commit, read_tree, hash_tree, hash_commit, read_index, add_index_item, get_head_commit, read_ref, log_tree, log_commit
+write_blob, write_tree, write_commit, read_tree, hash_tree, hash_commit, read_index, add_index_item, add_index_dir, get_head_commit, read_ref, log_tree, log_commit
 .SH DESCRIPTION
 This is the developer man page for the header file objutils.h. For 9it usage, please refer to 9it (1).
 .SH SYNOPSIS
@@ -17,6 +17,7 @@ This is the developer man page for the header file objutils.h. For 9it usage, pl
 \fBvoid hash_commit(Commit* \fIcommit\fR);\fP
 
 \fBint add_index_item(char* \fIfile_path\fR);\fP
+\fBint add_index_dir(char* \fIfile_path\fR);\fP
 \fBIndex* read_index(void);\fP
 
 \fBunsigned char* get_head_commit(void);\fP
@@ -27,15 +28,18 @@ This is the developer man page for the header file objutils.h. For 9it usage, pl
 
 .fi
 .SH DESCRIPTION
-\fBwrite_blob\fP hashes and compresses a file and writes the blob into the 9it objects directory. \fBwrite_tree\fP and \fBwrite_commit\fP are similar but they don't perform any hashing. The caller must hash the structs themselves (perhaps by calling \fBhash_tree\fP and \fBhash_commit\fP) and set the hash field in the respective structs. For more information on the structure of the binary that is written into objects, see 9it-format (5).
+\fBwrite_blob\fP hashes and compresses a file and writes the blob into the 9it objects directory. \fBwrite_tree\fP and \fBwrite_commit\fP are similar but they don't perform any hashing. The caller must hash the structs themselves (perhaps by calling \fBhash_tree\fP and \fBhash_commit\fP) and set the hash field in the respective structs. Keep in mind that \fBwrite_tree\fP is not recursive, it will not write children trees. For more information on the structure of the binary that is written into objects, see 9it-format (5).
 
 \fBread_tree\fP requires that the hash field of the Tree that is passed in to be set, as that is what it uses to find the file to read. If the tree is the root, the name field is also not set. Also, this function is NOT recursive, it will partially create the children of the tree that is read. Specifically, the name and hash of the children will be set, but the children of the children will be empty regardless if they have children or not. The caller must iterate through the children and call this function on them.
 
 \fBhash_tree\fP and \fBhash_commit\fP will hash the respective structs and set the hash field of the structs as a result. As such, there is no return value.
+
+\fBadd_index_item\fP adds a file to the index, whereas \fBadd_index_dir\fP recursively adds all files in the directory supplied. The path supplied must be relative to the repository root. In addition, it is the caller's responsibility to ensure that the path passed to \fBadd_index_item\fP is indeed a file and not a directory.
 
 \fBlog_tree\fP and \fBlog_commit\fP are simple utility functions that print out all the fields of the respective struct.
 
 .SH RETURN VALUE
 On success \fBwrite_blob\fP, \fBwrite_tree\fP \fBwrite_commit\fP, \fBread_tree\fP return a malloced hexstring of length SHA_DIGEST_LENGTH that corresponds to the hash of the object that was written. This hexstring is not null terminated and needs to be freed. If the object already existed before the write, the hexstring is still returned and no write is done. On error, NULL is returned.
 
+\fBadd_index_item\fP and \fBadd_index_dir\fP return 0 on success and -1 on failure.
 

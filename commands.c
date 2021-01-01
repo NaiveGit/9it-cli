@@ -42,3 +42,23 @@ init(char* root)
 
     return 0;
 }
+
+int
+add (char* local_path)
+{
+    char* relative_path;
+    int relative_length;
+
+    /* make local_path relative to repo root */
+    relative_path = get_local_path();
+    relative_length = strlen(relative_path)+strlen(local_path);
+    relative_path = realloc(relative_path, relative_length+1);
+    strcat(relative_path, local_path);
+
+    /* check if dir or file */
+    printf("Adding file with path %s\n", relative_path);
+
+    free(relative_path);
+
+    return 0;
+}

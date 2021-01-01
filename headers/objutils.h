@@ -70,6 +70,7 @@ extern void hash_tree(Tree* tree); // writes hash to tree's hash field
 extern void hash_commit(Commit* commit);
 
 extern int add_index_item(char* file_path);
+extern int add_index_dir(char* file_path);
 extern Index* read_index(void);
 
 extern unsigned char* get_head_commit(void);

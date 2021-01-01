@@ -17,8 +17,10 @@ main(int argc, char** argv)
     
     argp_parse(&global_argp, argc, argv, ARGP_IN_ORDER, 0, 0);
 
-
-    /* printf("%d\n", read_index()->index_length); */
+    /* printf("%s\n", get_dot_dir()); */
+    /* printf("%s\n", get_repo_root()); */
+    /* printf("%s\n", get_cwd()); */
+    /* printf("%s\n", get_local_path()); */
 
     return 0;
 }

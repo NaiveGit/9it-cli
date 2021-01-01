@@ -29,8 +29,13 @@ extern char* read_until_null(FILE* stream);
 extern void write_hash(FILE* stream, unsigned char* hash);
 extern void write_null(FILE* stream);
 
+/* string stuff */
 extern char* cat_str(int num, ...);
+extern int strend(char* s, char* t);
 
+/* directory stuff */
 extern char* get_cwd(void);
+extern char* get_local_path(void);
+
 
 #endif

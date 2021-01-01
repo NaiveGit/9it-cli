@@ -189,7 +189,6 @@ read_tree(Tree* root)
 
 }
 
-
 void
 hash_tree(Tree* tree)
 { 
@@ -248,6 +247,7 @@ hash_commit(Commit* commit)
     fclose(temp_stream);
 }
 
+/* TODO: make path relative to .9it folder or repo root */
 int
 add_index_item(char* file_path)
 {
@@ -302,6 +302,15 @@ add_index_item(char* file_path)
     /* also free index array */
 
     fclose(index_file);
+    free(hash);
+
+    return 0;
+}
+
+int
+add_index_dir(char* file_path)
+{
+    /* make an actual directory is given */ 
 
     return 0;
 }

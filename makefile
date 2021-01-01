@@ -35,9 +35,15 @@ install: all
 	mkdir -p ${INSTALL_PATH}/bin
 	cp -f 9it ${INSTALL_PATH}/bin
 	chmod 775 ${INSTALL_PATH}/bin/9it
+	mkdir -p ${INSTALL_PATH}/man/man1
+	mkdir -p ${INSTALL_PATH}/man/man3
+	cp -f docs/9it.1 ${INSTALL_PATH}/man/man1
+	cp -f docs/9it-objutils.3 ${INSTALL_PATH}/man/man3
 	
 uninstall:
-	rm -f ${INSTALL_PATH}/bin/9it
+	rm -f ${INSTALL_PATH}/bin/9it \
+		${INSTALL_PATH}/man/man1/9it.1 \
+		${INSTALL_PATH}/man/man3/9it-objutils.3
 
 clean:
-	rm 9it *.o headers/*.gch
+	rm 9it *.o

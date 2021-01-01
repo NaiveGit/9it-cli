@@ -8,9 +8,9 @@
 #include <limits.h>
 #include <assert.h>
 
-
 // add sm for .9it dir instead of this mess
 /* #define DOT_DIR ".9it/" */
+#define NON_BARE_DIR ".9it/"
 
 #define OBJ_DIR "obj/"
 #define REFS_DIR "refs/"
@@ -34,6 +34,7 @@
 #define HEAD_DEFAULT "senpai"
 
 extern const char* get_dot_dir(void);
+extern char* get_repo_root(void);
 extern void set_dot_dir(char* dir);
 
 #endif

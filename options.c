@@ -140,7 +140,8 @@ parse_add_opt(int key, char* arg, ArgpState* state)
             printf("Add update option\n");
             break;
         case ARGP_KEY_ARG:
-            add_index_item(arg);
+            /* add_index_item(arg); */
+            add(arg);
             break;
         default:
             return ARGP_ERR_UNKNOWN;
@@ -176,7 +177,7 @@ parse_init_opt(int key, char* arg, ArgpState* state)
             
             // handle no args
             if (state->argc == 1) {
-                init(".9it/");
+                init(NON_BARE_DIR);
             }
             
             break;

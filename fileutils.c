@@ -222,6 +222,19 @@ cat_str(int num, ...) // mallocs
     return out;
 }
 
+
+int // from https://codereview.stackexchange.com/questions/54722/determine-if-one-string-occurs-at-the-end-of-another/54724
+strend(char* s, char* t)
+{
+    size_t ls = strlen(s);
+    size_t lt = strlen(t);
+
+    if (ls >= lt) {
+        return (0 == memcmp(t, s + (ls - lt), lt));
+    }
+    return 0; 
+}
+
 char*
 get_cwd(void)
 {
@@ -233,8 +246,30 @@ get_cwd(void)
         exit(1);
     }
 
-    out = malloc(strlen(cwd)+1);
-    memcpy(out, cwd, strlen(cwd)+1);
+    out = strdup(cwd);
+    strcat(out, "/");
 
     return out;
+}
+
+char*
+get_local_path(void)
+{
+    char* cwd;
+    char* repo_root;
+    int out_len;
+    char* out;
+
+    cwd = get_cwd();
+    repo_root = get_repo_root(); 
+
+    /* cwd SHOULD start with repo_root */
+    assert(memcmp(repo_root, cwd, strlen(repo_root)) == 0);
+
+    out_len = strlen(cwd) - strlen(repo_root);
+    out = malloc(out_len+1);
+    memcpy(out, cwd+strlen(repo_root), out_len+1);
+
+    return out;
+
 }
