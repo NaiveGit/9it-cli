@@ -63,6 +63,7 @@ add(char* local_path)
     }
 
     if (S_ISDIR(file_stat.st_mode) == 0) { // not a dir
+        printf("adding %s\n", relative_path);
         add_index_item(relative_path);
 
     } else {

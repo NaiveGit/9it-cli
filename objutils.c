@@ -256,6 +256,7 @@ hash_commit(Commit* commit)
 int
 add_index_item(char* file_path)
 {
+    char* absolute_path;
     FILE* filepath_stream;
     unsigned char* hash;
     Stat file_stat;
@@ -264,19 +265,22 @@ add_index_item(char* file_path)
     int index_header_entries;
 
     /* grab file stats */
-    if (lstat(file_path, &file_stat) == -1) {
-        perror(NULL);
+    absolute_path = rcat_str(2, get_repo_root(), file_path);
+    if (lstat(absolute_path, &file_stat) == -1) {
+        perror("add_index_item > lstat");
         return -1; 
     }
+    free(absolute_path);
 
     filepath_stream = fmemopen(file_path, strlen(file_path), "rb");
     hash = hash_stream(filepath_stream);
+    fclose(filepath_stream);
 
     /* build the binary */
     out_path = cat_str(2, get_dot_dir(), INDEX_FILE);
     index_file = fopen(out_path, "r+b");
     if (index_file == NULL) {
-        perror(NULL);
+        perror("add_index_item > fopen");
         return -1;
     }
     free(out_path);
