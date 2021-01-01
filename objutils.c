@@ -360,6 +360,18 @@ add_index_dir(char* dir_path)
     return 0;
 }
 
+int
+clear_index(void)
+{
+    char* index_file = cat_str(2, get_dot_dir(), INDEX_FILE);
+    if (write_to_file(index_file, INDEX_DEFAULT_HEADER, HEADER_LENGTH) == -1) {
+        return -1;
+    }
+    free(index_file);
+
+    return 0;
+}
+
 Index*
 read_index(void)
 {
@@ -422,10 +434,15 @@ read_index(void)
 unsigned char*
 get_head_commit(void)
 {
+    return read_ref(get_cur_branch());
+}
+
+char*
+get_cur_branch(void)
+{
     char* out_path;
     FILE* head_file;
     char* cur_branch;
-    unsigned char* hash;
 
     out_path = cat_str(2, get_dot_dir(), HEAD_FILE);
     head_file = fopen(out_path, "rb");
@@ -437,12 +454,29 @@ get_head_commit(void)
 
     cur_branch = read_until_null(head_file);
     fclose(head_file);
-
-    hash = read_ref(cur_branch);
-
-    free(cur_branch);
     
-    return hash;
+    return cur_branch;
+}
+
+int
+write_ref(char* branch_name, unsigned char* hash)
+{ // creates the file if it's not already created
+     
+    FILE* ref_file;
+    char* ref_path;
+
+    ref_path = cat_str(3, get_dot_dir(), HEADS_DIR, branch_name);
+    ref_file = fopen(ref_path, "wb");
+    if (ref_file == NULL) { // no commits
+        return -1;
+    }
+    
+    write_hash(ref_file, hash);
+
+    fclose(ref_file);
+    free(ref_path);
+
+    return 0;
 }
 
 unsigned char*

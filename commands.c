@@ -94,6 +94,7 @@ commit(char* commit_msg)
     Tree* root_tree;
     char* username;
     unsigned char* parent_commit_hash;
+    char* cur_branch;
 
     /* grab the index tree */
     root_tree = commit_tree();
@@ -116,7 +117,13 @@ commit(char* commit_msg)
     hash_commit(&new_commit); 
     write_commit(&new_commit);
 
+    /* update refs */
+    cur_branch = get_cur_branch();
+    write_ref(cur_branch, new_commit.hash);
+    free(cur_branch);
+
     /* clear index */
+    clear_index();
 
     return 0;
 }

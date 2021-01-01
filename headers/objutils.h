@@ -73,9 +73,12 @@ extern void hash_commit(Commit* commit);
 
 extern int add_index_item(char* file_path);
 extern int add_index_dir(char* file_path);
+extern int clear_index(void);
 extern Index* read_index(void);
 
 extern unsigned char* get_head_commit(void);
+extern char* get_cur_branch(void);
+extern int write_ref(char* branch_name, unsigned char* hash);
 extern unsigned char* read_ref(char* branch_name);
 
 /* logging */
