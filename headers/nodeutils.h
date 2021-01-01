@@ -19,6 +19,6 @@ tree
 
 */
 
-extern Tree* commit_tree(void);
+extern void commit_tree(void);
 
 #endif
