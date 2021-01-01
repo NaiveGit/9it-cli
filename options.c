@@ -155,7 +155,6 @@ parse_commit_opt(int key, char* arg, ArgpState* state)
     switch (key) {
         case 'm':
             /* printf("Called commit with -m flag with message: %s\n", arg); */
-            commit_tree(); 
             commit(arg);
             break;
 

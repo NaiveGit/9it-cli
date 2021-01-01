@@ -216,7 +216,11 @@ void
 write_full_tree(Tree* root) {
     write_tree(root);
     for (int i = 0; i < root->cnum; i++) {
-        write_full_tree(&root->children[i]);
+        if (root->children[i].nodeType == NodeType_blob) {
+            write_blob(root->children[i].name);
+        } else {
+            write_full_tree(&root->children[i]);
+        }
     }
 }
 
