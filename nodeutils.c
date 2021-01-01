@@ -5,7 +5,7 @@ int find_folder(Tree* root, char* path);
 Tree* commit_tree(void);
 void print_tree(Tree* root);
 void hash_all(Tree* root);
-Tree* duplicate_tree(unsigned char* hash, char* name);
+Tree* duplicate_tree(unsigned char* hash, char* name, Tree* root);
 void delete(Tree* root, char* nextFolder, char* path);
 void write_full_tree(Tree* root);
 
@@ -53,7 +53,6 @@ void
 add_to(Tree* root, Tree* new_node, char* nextFolder,char* path)
 {
     strcat(path,nextFolder);
-    printf("Path: %s, and the name: %s \n",path,new_node->name);
     if (strcmp(path,new_node->name) != 0) { // If still going to path 
         strcat(path,"/");
         // If folder doesn't exist, make it
@@ -78,12 +77,10 @@ add_to(Tree* root, Tree* new_node, char* nextFolder,char* path)
         }
         //Go into folder
         else {
-            printf("Go into folder postion %d \n",folderpos);
             add_to(&root->children[folderpos],new_node,nextFolder,path);
         }
     }
     else {//We've reached the end, add the object file here. 
-        printf("OBJECT INSERTING \n");
         root->cnum+=1;
         root->children = realloc(root->children,root->cnum*sizeof(Tree));
         root->children[root->cnum-1] = *(new_node);//Set it equal
@@ -106,10 +103,16 @@ commit_tree(void)
     unsigned char* recent_commit = get_head_commit();
     if (NULL != recent_commit){
         // File exists
-        Tree* root;
-        // root = duplicate_tree(recent_commit, "");
+        Tree* root = malloc(sizeof(Tree));
+        duplicate_tree(recent_commit, "", root);
 
         // LOGIC
+        // Loop Thru index. Check if file exists irl. If it does, try adding it.
+        // When adding, there is a possibility that the hash will be different. In that case, 
+        // Find it, and perform logic to check if hash is the same.
+        // Don't worry about folders because those will be rehashed. 
+        // If the file does not exist irl, then delete it.
+
     }
     else {
         root =  init_tree(read_index());
@@ -182,24 +185,18 @@ hash_all(Tree* root)
        }
        hash_tree(root);
    } 
-//   else if (root->nodeType == NodeType_blob) {
-       // Dunno what to put here.
-//   }
 }
 
 // Duplicates the tree
 Tree*
-duplicate_tree(unsigned char* hash, char* name)
+duplicate_tree(unsigned char* hash, char* name, Tree* root)
 {
-    Tree* root;
-    // Node we're adding to tree
-    root = malloc(sizeof(Tree));
     root->hash = hash;
     root->name = name;
     read_tree(root);
     for (int i = 0; i < root->cnum; ++i) {
         if (root->children[i].nodeType == NodeType_tree) {
-            duplicate_tree(root->children[i].hash, root->children[i].name);
+            duplicate_tree(root->children[i].hash, root->children[i].name, &root->children[i]);
         }
     }
     return root;
