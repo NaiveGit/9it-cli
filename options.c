@@ -8,6 +8,7 @@ static void parse_command(char* cmd_name, Argp* argp, ArgpState* state);
 
 static error_t parse_global_opt(int key, char* arg, ArgpState* state);
 static error_t parse_add_opt(int key, char* arg, ArgpState* state);
+static error_t parse_cat_opt(int key, char* arg, ArgpState* state);
 static error_t parse_commit_opt(int key, char* arg, ArgpState* state);
 static error_t parse_init_opt(int key, char* arg, ArgpState* state);
 
@@ -19,6 +20,7 @@ static char global_doc[] = "\
 9it - The version control system that is totally not git\v\
 Commands:\n\
     add\n\
+    cat\n\
     commit\n\
     init\n\
 ";
@@ -44,6 +46,20 @@ Argp add_argp = {
     parse_add_opt,
     0,
     add_doc
+};
+
+/* CAT subcommand */
+static char cat_doc[] = "print out a 9it object as readable text";
+static ArgpOption cat_options[] = {
+    {"type", 't', 0, 0, "get the type of the object"},
+    {"print", 'p', "obj_path", 0, "get the type of the object"},
+    {0}
+};
+Argp cat_argp = {
+    cat_options,
+    parse_cat_opt,
+    0,
+    cat_doc
 };
 
 /* COMMIT subcommand */
@@ -110,6 +126,8 @@ parse_global_opt(int key, char* arg, ArgpState* state)
             if (strcmp(arg, "add") == 0 || strcmp(arg, "stage") == 0) {
                 /* printf("Add command!\n"); */
                 parse_command("add", &add_argp, state);
+            } else if (strcmp(arg, "cat") == 0) {
+                parse_command("cat", &cat_argp, state);
             } else if (strcmp(arg, "commit") == 0) {
                 /* printf("Commit command!\n"); */
                 parse_command("commit", &commit_argp, state);
@@ -143,6 +161,25 @@ parse_add_opt(int key, char* arg, ArgpState* state)
             /* add_index_item(arg); */
             add(arg);
             break;
+        default:
+            return ARGP_ERR_UNKNOWN;
+    }
+    return 0;
+}
+
+static error_t
+parse_cat_opt(int key, char* arg, ArgpState* state)
+{
+    switch (key) {
+        case 't':
+
+            printf("print out object type\n");
+            break;
+
+        case 'p':
+            cat(arg);
+            break;
+
         default:
             return ARGP_ERR_UNKNOWN;
     }

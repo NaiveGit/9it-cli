@@ -115,11 +115,13 @@ write_commit(Commit* commit)
 
     /* write n shit */
     fwrite(COMMIT_DEFAULT_HEADER, sizeof(char), HEADER_LENGTH, commit_file);
-    write_hash(commit_file, commit->root_tree->hash);
+    write_hash(commit_file, commit->root_tree_hash);
 
     fwrite(commit->committer, sizeof(char), strlen(commit->committer), commit_file);
+    write_null(commit_file);
     fwrite(&commit->timestamp, sizeof(time_t), 1, commit_file);
     fwrite(commit->msg, sizeof(char), strlen(commit->msg), commit_file);
+    write_null(commit_file);
     if (commit->parent_commit_hash != NULL) { // not the first commit
         write_hash(commit_file, commit->parent_commit_hash);
     }
@@ -192,6 +194,55 @@ read_tree(Tree* root)
 
 }
 
+Commit*
+read_commit(unsigned char* hash)
+{
+    char* hexstring;
+    char* out_path;
+    FILE* commit_file;
+    Commit* commit;
+    unsigned char* root_tree_hash;
+    unsigned char* parent_commit_hash;
+
+    hexstring = hash_to_string(hash);
+    out_path = cat_str(3, get_dot_dir(), OBJ_DIR, hexstring);
+    free(hexstring);
+
+    commit_file = fopen(out_path, "rb");
+    free(out_path);
+    if (commit_file == NULL) {
+        perror("read_commit: fopen");
+        return NULL;
+    }
+
+    commit = malloc(sizeof(Commit));
+    commit->hash = hash;
+
+    /* skip header */
+    fseek(commit_file, HEADER_LENGTH ,SEEK_SET);
+
+    root_tree_hash = malloc(SHA_DIGEST_LENGTH);
+    fread(root_tree_hash, sizeof(unsigned char), SHA_DIGEST_LENGTH, commit_file);
+    commit->root_tree_hash = root_tree_hash;
+
+    commit->committer = read_until_null(commit_file);
+    fread(&commit->timestamp, sizeof(time_t), 1, commit_file);
+    commit->msg = read_until_null(commit_file);
+
+    /* check if there is any more to read */
+    parent_commit_hash = malloc(SHA_DIGEST_LENGTH);
+    if (fread(parent_commit_hash, sizeof(unsigned char), SHA_DIGEST_LENGTH, commit_file) < SHA_DIGEST_LENGTH) {
+        free(parent_commit_hash);
+        commit->parent_commit_hash = NULL; 
+    } else {
+        commit->parent_commit_hash = parent_commit_hash;
+    }
+
+    fclose(commit_file);
+
+    return commit;
+}
+
 void
 hash_tree(Tree* tree)
 { 
@@ -238,7 +289,7 @@ hash_commit(Commit* commit)
 
     temp_stream = fmemopen(NULL, buf_size, "r+b");
 
-    write_hash(temp_stream, commit->root_tree->hash);
+    write_hash(temp_stream, commit->root_tree_hash);
     fwrite(&commit->committer, 1, strlen(commit->committer), temp_stream);
     fwrite(&commit->timestamp, sizeof(time_t), 1, temp_stream);
     fwrite(&commit->msg, 1, strlen(commit->msg), temp_stream);
@@ -505,14 +556,21 @@ read_ref(char* branch_name)
     return hash; 
 }
 
+
+ObjType
+obj_type(char* obj_path)
+{
+    return ObjType_undefined;
+}
+
 void
-log_tree(Tree* tree)
+log_tree(char* obj_path)
 {
 
 }
 
 void
-log_commit(Commit* commit)
+log_commit(char* obj_path)
 {
 
 }

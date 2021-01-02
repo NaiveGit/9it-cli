@@ -89,6 +89,23 @@ add(char* local_path)
 }
 
 int
+cat(char* obj_path)
+{
+
+    /* Commit* commit; */
+    /* commit = read_commit(obj_path); */
+
+    /* /1* print cmmit hash *1/ */
+    /* printf("tree: %s\n", hash_to_string(commit->root_tree_hash)); */
+    /* printf("commiter: %s\n", commit->committer); */
+    /* printf("message: %s\n", commit->msg); */
+    /* if (commit->parent_commit_hash != NULL) { */
+    /*     printf("previous commit: %s\n", hash_to_string(commit->parent_commit_hash)); */
+    /* } */
+
+}
+
+int
 commit(char* commit_msg)
 { // tree must be hashed and ready
     Commit new_commit;
@@ -108,7 +125,7 @@ commit(char* commit_msg)
     }
 
     /* make commit */
-    new_commit.root_tree = root_tree;
+    new_commit.root_tree_hash = root_tree->hash;
     new_commit.committer = username;
     new_commit.timestamp = time(0);
     new_commit.msg = commit_msg;

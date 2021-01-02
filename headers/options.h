@@ -15,5 +15,7 @@ typedef struct argp_state ArgpState;
 extern Argp global_argp;
 extern Argp add_argp;
 extern Argp commit_argp;
+extern Argp cat_argp;
+extern Argp init_argp;
 
 #endif

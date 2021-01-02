@@ -20,6 +20,13 @@ typedef enum {
     NodeType_tree = 1
 } NodeType;
 
+typedef enum {
+    ObjType_undefined,
+    ObjType_blob,
+    ObjType_tree,
+    ObjType_commit
+} ObjType;
+
 typedef struct Tree Tree;
 struct Tree {
     unsigned char* hash;
@@ -32,7 +39,7 @@ struct Tree {
 typedef struct Commit Commit;
 struct Commit {
     unsigned char* hash;
-    Tree* root_tree;
+    unsigned char* root_tree_hash;
     /* char* author; /1* we dont need author prob *1/ */
     char* committer; // read from enviroment variables
     time_t timestamp;
@@ -66,23 +73,28 @@ extern char* write_commit(Commit* commit);
 
 /* read objects */
 extern char* read_tree(Tree* root);
+extern Commit* read_commit(unsigned char* hash);
 
 /* hashing objects */
 extern void hash_tree(Tree* tree); // writes hash to tree's hash field
 extern void hash_commit(Commit* commit);
 
+/* index related */
 extern int add_index_item(char* file_path);
 extern int add_index_dir(char* file_path);
 extern int clear_index(void);
 extern Index* read_index(void);
 
+/* ref / head related */
 extern unsigned char* get_head_commit(void);
 extern char* get_cur_branch(void);
 extern int write_ref(char* branch_name, unsigned char* hash);
 extern unsigned char* read_ref(char* branch_name);
 
 /* logging */
-extern void log_tree(Tree* tree);
-extern void log_commit(Commit* commit);
+extern ObjType obj_type(char* obj_path);
+extern void log_tree(char* obj_path);
+extern void log_commit(char* obj_path);
+
 
 #endif

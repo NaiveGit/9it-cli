@@ -19,6 +19,7 @@ extern int write_to_file(char* file_path, char* contents, int length);
 extern int copy_stream(FILE* instream, FILE* outstream);
 extern unsigned char* hash_stream(FILE* stream);
 extern char* hash_to_string(unsigned char* hash);
+extern unsigned char* string_to_hash(char* hexstring);
 extern int compress_file(FILE* stream, char* outname);
 
 extern char* read_until_null(FILE* stream);

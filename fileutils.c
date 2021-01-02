@@ -118,6 +118,25 @@ hash_to_string(unsigned char* hash)
     return hexstring;
 }
 
+unsigned char*
+string_to_hash(char* hexstring)
+{
+    unsigned char* hash;
+
+    assert(strlen(hexstring) == 2*SHA_DIGEST_LENGTH);    
+
+    hash = malloc(SHA_DIGEST_LENGTH);
+    for (int i = 0; i < SHA_DIGEST_LENGTH; i++) {
+        char hex[2];
+
+        memcpy(hex, hexstring+i*2, 2);
+       
+        hash[i] = (int)strtol(hex, NULL, 16);
+    }
+
+    return hash;
+}
+
 int
 compress_file(FILE* stream, char* outname)
 {
