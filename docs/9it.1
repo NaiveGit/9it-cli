@@ -1,9 +1,9 @@
-.TH 9IT 1 2020-12-22 9it-0.1
+.TH 9IT 1 2021-01-03 9it-0.1
 .SH NAME
 9it \- totally not git!
 .SH SYNOPSIS
 .B 9it 
-<subcommand>
+[9it options] <subcommand> [subcommand options]
 .SH DESCRIPTION
 9it is a simple version control system written in C.
 .SH OPTIONS
@@ -15,10 +15,21 @@ Displays a list of subcommands.
 .SH SUBCOMMANDS
 .SS add
 Adds files to the index.
+.SS cat
+Displays helpful information about the 9it objects in the objects directory.
+.TP
+\fB\-\-print\fR, \fB\-p\fR <\fIobject-file\fP>
+Prints out the contents of object file in human readable text.
+.TP
+\fB\-\-type\fR, \fB\-t\fR <\fIobject-file\fP>
+Prints out the type of the object file. Possible ones are "Blob", "Tree", and "Commit".
 .SS commit
 Commit changes.
 .SS init
-Initialize a new 9it repository.
+Initialize a new 9it repository in the current working directory. By default, the 9it required files are placed in a hidden .9it directory.
+.TP
+\fB\-\-bare\fR, \fB\-b\fR
+Dumps the contents of the .9it directory into the current directory. This option is mostly used on the server side.
 .SH FILES/DIRECTORY STRUCTURE
 If 9it was initialized without the bare option, then 9it will create a hidden .9it directory inside the current working directory, which contains all the files required.
 Generally, the user does not need to worry about the contents of this directory, but an explanation is included here nonetheless.
