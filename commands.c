@@ -91,17 +91,71 @@ add(char* local_path)
 int
 cat(char* obj_path)
 {
+    FILE* obj_file;
+    char type[HEADER_TYPE_LENGTH];
 
-    /* Commit* commit; */
-    /* commit = read_commit(obj_path); */
+    /* first find out what type of file it is */
+    obj_file = fopen(obj_path, "rb");
+    if (obj_file == NULL) {
+        printf("Invalid path\n");
+        return -1;
+    }
 
-    /* /1* print cmmit hash *1/ */
-    /* printf("tree: %s\n", hash_to_string(commit->root_tree_hash)); */
-    /* printf("commiter: %s\n", commit->committer); */
-    /* printf("message: %s\n", commit->msg); */
-    /* if (commit->parent_commit_hash != NULL) { */
-    /*     printf("previous commit: %s\n", hash_to_string(commit->parent_commit_hash)); */
-    /* } */
+    /* read first 4 bytes of header */
+    fread(&type, sizeof(char), HEADER_TYPE_LENGTH, obj_file);
+    fclose(obj_file);
+
+    if (memcmp(type, BLOB_TYPE, HEADER_TYPE_LENGTH) == 0) {
+        printf("9it BLOB =-=-=-=-=-=-=-=\n");
+
+    } else if (memcmp(type, TREE_TYPE, HEADER_TYPE_LENGTH) == 0) {
+        Tree* tree;
+        unsigned char* hash;
+
+        tree = malloc(sizeof(Tree));
+        /* get hash from file path, there could be problems if theres no leading slash */
+        hash = string_to_hash(strrchr(obj_path, '/')+1);
+
+        tree->hash = hash;
+        read_tree(tree);
+
+        printf("9it TREE =-=-=-=-=-=-=-=\n");
+        printf("Tree hash: %s\n", hash_to_string(tree->hash));
+        for (int i = 0; i < tree->cnum; i++) {
+            Tree child;
+
+            child = tree->children[i];
+            printf("%d %s %s\n", child.nodeType, hash_to_string(child.hash), child.name);
+        }
+
+    } else if (memcmp(type, COMMIT_TYPE, HEADER_TYPE_LENGTH) == 0) {
+        Commit* commit;
+        unsigned char* hash;
+
+        commit = malloc(sizeof(Commit));
+
+        hash = string_to_hash(strrchr(obj_path, '/')+1);
+
+        commit->hash = hash;
+        read_commit(commit);
+
+        printf("9it COMMIT =-=-=-=-=-=-=-=\n"); /* free the hash_tostrings */
+        printf("Commit hash: %s\n", hash_to_string(commit->hash));
+        if (commit->parent_commit_hash != NULL) {
+            printf("Previous commit: %s\n", hash_to_string(commit->parent_commit_hash));
+        }
+        printf("Root tree: %s\n", hash_to_string(commit->root_tree_hash));
+        printf("Committer: %s\n", commit->committer);
+        /* printf("") */ /* time stamp */
+        printf("Message: %s\n", commit->msg);
+
+    } else {
+        printf("This does not appear to be a 9it object\n");
+        return -1;
+
+    }
+
+    return 0;
 
 }
 
