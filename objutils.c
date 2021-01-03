@@ -77,7 +77,7 @@ write_tree(Tree* tree)
 
         child = tree->children[c];
 
-        fwrite(&child.nodeType, NODETYPE_SIZE, 1, tree_file);        
+        fwrite(&child.nodeType, sizeof(NodeType), 1, tree_file);        
         write_hash(tree_file, child.hash);
         fwrite(child.name, 1, strlen(child.name), tree_file);
         write_null(tree_file);
@@ -173,7 +173,7 @@ read_tree(Tree* root)
         /* create new children */
         child_tree = malloc(sizeof(Tree));
 
-        fread(&child_tree->nodeType, NODETYPE_SIZE, 1, tree_file);
+        fread(&child_tree->nodeType, sizeof(NodeType), 1, tree_file);
 
         hash = malloc(SHA_DIGEST_LENGTH);
         fread(hash, 1, SHA_DIGEST_LENGTH, tree_file);
@@ -515,27 +515,6 @@ get_cur_branch(void)
     return cur_branch;
 }
 
-int
-write_ref(char* branch_name, unsigned char* hash)
-{ // creates the file if it's not already created
-     
-    FILE* ref_file;
-    char* ref_path;
-
-    ref_path = cat_str(3, get_dot_dir(), HEADS_DIR, branch_name);
-    ref_file = fopen(ref_path, "wb");
-    if (ref_file == NULL) { // no commits
-        return -1;
-    }
-    
-    write_hash(ref_file, hash);
-
-    fclose(ref_file);
-    free(ref_path);
-
-    return 0;
-}
-
 unsigned char*
 read_ref(char* branch_name)
 {
@@ -556,6 +535,27 @@ read_ref(char* branch_name)
     fclose(ref_file);
    
     return hash; 
+}
+
+int
+write_ref(char* branch_name, unsigned char* hash)
+{ // creates the file if it's not already created
+     
+    FILE* ref_file;
+    char* ref_path;
+
+    ref_path = cat_str(3, get_dot_dir(), HEADS_DIR, branch_name);
+    ref_file = fopen(ref_path, "wb");
+    if (ref_file == NULL) { // no commits
+        return -1;
+    }
+    
+    write_hash(ref_file, hash);
+
+    fclose(ref_file);
+    free(ref_path);
+
+    return 0;
 }
 
 

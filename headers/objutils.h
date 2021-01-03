@@ -88,8 +88,8 @@ extern Index* read_index(void);
 /* ref / head related */
 extern unsigned char* get_head_commit(void);
 extern char* get_cur_branch(void);
-extern int write_ref(char* branch_name, unsigned char* hash);
 extern unsigned char* read_ref(char* branch_name);
+extern int write_ref(char* branch_name, unsigned char* hash);
 
 /* logging */
 extern ObjType obj_type(char* obj_path);
