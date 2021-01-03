@@ -32,7 +32,10 @@ commit_tree(void)
     if (NULL != recent_commit_ptr){
         // File exists
         printf("Commiting with an existing commit! \n");
-        duplicate_tree(recent_commit_ptr, "", root);
+        Commit curc = read_commit(recent_commit_ptr);
+        // Commit* curcommit = read_commit(recent_commit_ptr);
+        duplicate_tree(curc.hash, "", root);
+        print_tree(root);
         
         // When adding, there is a possibility that the hash will be different. In that case, 
         // Find it, and perform logic to check if hash is the same.
@@ -138,7 +141,7 @@ add_to_helper(Tree* root, Tree* new_node, char* nextFolder,char* path)
     else {//We've reached the end, add the object file here. 
         int objectpos = find_child(root,path);
         if (objectpos == -1) {
-            printf("Object inserted for the first time!\n");
+            printf("Object inserted for the first time! Path: %s\n",path);
             root->cnum+=1;
             root->children = realloc(root->children,root->cnum*sizeof(Tree));
             root->children[root->cnum-1] = *(new_node);//Set it equal
