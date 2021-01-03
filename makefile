@@ -46,4 +46,4 @@ uninstall:
 		${INSTALL_PATH}/man/man3/9it-objutils.3
 
 clean:
-	rm 9it *.o
+	rm *.o
