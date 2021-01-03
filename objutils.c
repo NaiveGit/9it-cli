@@ -2,7 +2,7 @@
 #include "headers/fileutils.h"
 #include "headers/globals.h"
 
-char*
+int
 write_blob(char* file_path)
 {
     FILE* file;
@@ -13,18 +13,21 @@ write_blob(char* file_path)
     /* open original file */
     file = fopen(file_path, "rb");
     if (file == NULL) {
-        perror(NULL);
-        return NULL;
+        perror("write_blob > fopen");
+        return -1;
     }
 
     file_hash = hash_stream(file);
     hexstring = hash_to_string(file_hash);
+    free(file_hash);
     out_path = cat_str(3, get_dot_dir(), OBJ_DIR, hexstring);
+    free(hexstring);
 
     /* check to see if object already exists */
     if (access(out_path, F_OK) != 0) { // does not exist
 
         /* create the file */
+        write_to_file(out_path, BLOB_DEFAULT_HEADER, HEADER_LENGTH);
         compress_file(file, out_path); // prob should error check this
     }
 
@@ -32,10 +35,10 @@ write_blob(char* file_path)
     free(out_path);
     fclose(file);
 
-    return hexstring;
+    return 0;
 }
 
-char*
+int
 write_tree(Tree* tree)
 { // TODO: make return clean up less cancer
     char* hexstring;
@@ -49,20 +52,20 @@ write_tree(Tree* tree)
 
     hexstring = hash_to_string(tree->hash);
     out_path = cat_str(3, get_dot_dir(), OBJ_DIR, hexstring);
+    free(hexstring);
 
     /* check if tree exists */
     if (access(out_path, F_OK) == 0) { // already exists
         free(out_path);
-        return hexstring;
+        return 0;
     }
 
     /* write */
     tree_file = fopen(out_path, "wb"); 
+    free(out_path);
     if (tree_file == NULL) {
-        free(hexstring);
-        free(out_path);
-        perror(NULL);
-        return NULL;
+        perror("write_tree > fopen");
+        return -1;
     }
 
     /* write the number of entries first */
@@ -82,12 +85,11 @@ write_tree(Tree* tree)
 
     /* clean up */
     fclose(tree_file);
-    free(out_path);
 
-    return hexstring;
+    return 0;
 }
 
-char*
+int
 write_commit(Commit* commit)
 { /* writes commit to objects  */
     
@@ -97,20 +99,20 @@ write_commit(Commit* commit)
 
     hexstring = hash_to_string(commit->hash);
     out_path = cat_str(3, get_dot_dir(), OBJ_DIR, hexstring);
+    free(hexstring);
 
     /* check if it already exists */
     if (access(out_path, F_OK) == 0) { // already exists
         free(out_path);
-        return hexstring;
+        return 0;
     }
 
     /* write */
     commit_file = fopen(out_path, "wb"); 
+    free(out_path);
     if (commit_file == NULL) {
-        free(hexstring);
-        free(out_path);
-        perror(NULL);
-        return NULL;
+        perror("write_commit > fopen");
+        return -1;
     }
 
     /* write n shit */
@@ -128,12 +130,11 @@ write_commit(Commit* commit)
 
     /* clean up */
     fclose(commit_file);
-    free(out_path);
 
-    return hexstring;
+    return 0;
 }
 
-char*
+int
 read_tree(Tree* root)
 {
     /* NOTE, this function is not RECURSIVE */
@@ -142,23 +143,25 @@ read_tree(Tree* root)
     char* hexstring;
     char* tree_path;
     FILE* tree_file;
-    int entry_num;
+    Tree* children_arr;
     Tree* child_tree;
     char* hash;
 
     /* build out dir */
     hexstring = hash_to_string(root->hash);
     tree_path = cat_str(3, get_dot_dir(), OBJ_DIR, hexstring);
+    free(hexstring);
 
     tree_file = fopen(tree_path, "rb");
+    free(tree_path);
     if (tree_file == NULL) {
-        perror(NULL);
-        return NULL;
+        perror("read_tree > fopen");
+        return -1;
     }
     
     /* get number of entries first */
     fseek(tree_file, HEADER_ENTRY_NUM_START, SEEK_SET);
-    fread(&root->cnum, sizeof(uint32_t), 1, tree_file);
+    fread(&root->cnum, HEADER_ENTRY_NUM_LENGTH, 1, tree_file);
     /* ROOT HASH IS NOT INITIALIZED!! */
     /* NAME IS NOT INITIALIZED BY THIS FUNCTION!! */
     root->nodeType = NodeType_tree;
@@ -188,38 +191,33 @@ read_tree(Tree* root)
 
     /* clean */
     fclose(tree_file);
-    free(tree_path);
 
-    return hexstring;
+    return 0;
 
 }
 
-Commit*
-read_commit(unsigned char* hash)
+int
+read_commit(Commit* commit)
 {
     char* hexstring;
     char* out_path;
     FILE* commit_file;
-    Commit* commit;
     unsigned char* root_tree_hash;
     unsigned char* parent_commit_hash;
 
-    hexstring = hash_to_string(hash);
+    hexstring = hash_to_string(commit->hash);
     out_path = cat_str(3, get_dot_dir(), OBJ_DIR, hexstring);
     free(hexstring);
 
     commit_file = fopen(out_path, "rb");
     free(out_path);
     if (commit_file == NULL) {
-        perror("read_commit: fopen");
-        return NULL;
+        perror("read_commit > fopen");
+        return -1;
     }
 
-    commit = malloc(sizeof(Commit));
-    commit->hash = hash;
-
     /* skip header */
-    fseek(commit_file, HEADER_LENGTH ,SEEK_SET);
+    fseek(commit_file, HEADER_LENGTH, SEEK_SET);
 
     root_tree_hash = malloc(SHA_DIGEST_LENGTH);
     fread(root_tree_hash, sizeof(unsigned char), SHA_DIGEST_LENGTH, commit_file);
@@ -240,10 +238,10 @@ read_commit(unsigned char* hash)
 
     fclose(commit_file);
 
-    return commit;
+    return 0;
 }
 
-void
+int
 hash_tree(Tree* tree)
 { 
     
@@ -272,9 +270,11 @@ hash_tree(Tree* tree)
 
     fclose(temp_stream);
 
+    return 0;
+
 }
 
-void
+int
 hash_commit(Commit* commit)
 {
     int buf_size;
@@ -301,6 +301,8 @@ hash_commit(Commit* commit)
     commit->hash = hash_stream(temp_stream);
 
     fclose(temp_stream);
+
+    return 0;
 }
 
 /* TODO: make path relative to .9it folder or repo root */

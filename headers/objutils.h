@@ -67,17 +67,17 @@ typedef struct Index {
 } Index;
 
 /* write objects */
-extern char* write_blob(char* file_path);
-extern char* write_tree(Tree* tree);
-extern char* write_commit(Commit* commit);
+extern int write_blob(char* file_path);
+extern int write_tree(Tree* tree);
+extern int write_commit(Commit* commit);
 
 /* read objects */
-extern char* read_tree(Tree* root);
-extern Commit* read_commit(unsigned char* hash);
+extern int read_tree(Tree* root);
+extern int read_commit(Commit* commit);
 
 /* hashing objects */
-extern void hash_tree(Tree* tree); // writes hash to tree's hash field
-extern void hash_commit(Commit* commit);
+extern int hash_tree(Tree* tree); // writes hash to tree's hash field
+extern int hash_commit(Commit* commit);
 
 /* index related */
 extern int add_index_item(char* file_path);

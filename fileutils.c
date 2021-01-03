@@ -145,7 +145,7 @@ compress_file(FILE* stream, char* outname)
     int fsize;
     char inbuffer[READ_CHUNK_SIZE];
 
-    outfile = gzopen(outname, "wb");
+    outfile = gzopen(outname, "ab");
     if (outfile== NULL) {
         printf("Something went wrong with writing to %s\n", outfile);
         return -1;
