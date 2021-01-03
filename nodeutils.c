@@ -32,10 +32,11 @@ commit_tree(void)
     if (NULL != recent_commit_ptr){
         // File exists
         printf("Commiting with an existing commit! \n");
-        Commit curc = read_commit(recent_commit_ptr);
+        Commit* c = malloc(sizeof(Commit));
+        c->hash = recent_commit_ptr;
+        read_commit(c);
         // Commit* curcommit = read_commit(recent_commit_ptr);
-        duplicate_tree(curc.hash, "", root);
-        print_tree(root);
+        duplicate_tree(c->root_tree_hash, "", root);
         
         // When adding, there is a possibility that the hash will be different. In that case, 
         // Find it, and perform logic to check if hash is the same.
@@ -72,7 +73,7 @@ commit_tree(void)
     // Loop Thru index. Check if file exists irl. If it does, try adding it.
     for (int i = 0; i < index->index_length; i++) {
         IndexItem current = index->index_items[i];
-        
+        printf("Current Index: Name: %s, Hash: %s \n",current.file_path,hash_to_string(current.hash)); 
         if (file_exists(current.file_path) == 1) {
             add_to(root,current);
         }
