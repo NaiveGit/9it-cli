@@ -10,25 +10,27 @@
 .TP
 .BR \-\-help
 Displays a list of subcommands.
-.TP
-.B \-\-usage
 .SH SUBCOMMANDS
 .SS add
-Adds files to the index.
+Adds files to the index. If a directory is passed, it will recursively add all files in that directory.
 .SS cat
 Displays helpful information about the 9it objects in the objects directory.
 .TP
-\fB\-\-print\fR, \fB\-p\fR <\fIobject-file\fP>
+\fB\-p\fR <\fIOBJECT-FILE\fP>, \fB\-\-print=\fR\fIOBJECT-FILE\fP
 Prints out the contents of object file in human readable text.
 .TP
-\fB\-\-type\fR, \fB\-t\fR <\fIobject-file\fP>
+\fB\-t\fR <\fIOBJECT-FILE\fP>, \fB\-\-type=\fR\fIOBJECT-FILE\fP
 Prints out the type of the object file. Possible ones are "Blob", "Tree", and "Commit".
 .SS commit
-Commit changes.
+Commit changes, by default, this opens your the editor set by you EDITOR environment variable and prompts you to enter a commit message. Also keep in mind that the NINEIT_USERNAME environment variable needs to be set when calling this.
+.TP
+\fB\-m\fR <\fIMESSAGE\fP> \fB\-\-message=\fR\fIMESSAGE\fP
+Allows you to enter a commit message inline. Remember to wrap the message in quotes if you want to use spaces.
+
 .SS init
 Initialize a new 9it repository in the current working directory. By default, the 9it required files are placed in a hidden .9it directory.
 .TP
-\fB\-\-bare\fR, \fB\-b\fR
+\fB\-b\fR, \fB\-\-bare\fR
 Dumps the contents of the .9it directory into the current directory. This option is mostly used on the server side.
 .SH FILES/DIRECTORY STRUCTURE
 If 9it was initialized without the bare option, then 9it will create a hidden .9it directory inside the current working directory, which contains all the files required.

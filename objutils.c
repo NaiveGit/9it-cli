@@ -310,7 +310,7 @@ int
 add_index_item(char* file_path)
 {
     char* absolute_path;
-    FILE* filepath_stream;
+    FILE* file_stream;
     unsigned char* hash;
     Stat file_stat;
     char* out_path;
@@ -325,9 +325,9 @@ add_index_item(char* file_path)
     }
     free(absolute_path);
 
-    filepath_stream = fmemopen(file_path, strlen(file_path), "rb");
-    hash = hash_stream(filepath_stream);
-    fclose(filepath_stream);
+    file_stream = fopen(file_path, "rb");
+    hash = hash_stream(file_stream);
+    fclose(file_stream);
 
     /* build the binary */
     out_path = cat_str(2, get_dot_dir(), INDEX_FILE);
