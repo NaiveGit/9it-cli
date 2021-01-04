@@ -558,7 +558,14 @@ read_index(void)
 unsigned char*
 get_head_commit(void)
 {
-    return read_ref(get_cur_branch());
+    unsigned char* head_hash;
+
+    head_hash = read_ref(get_cur_branch());
+    if (strlen(head_hash) == 0) {
+        return NULL;
+    }
+
+    return head_hash;
 }
 
 int
@@ -612,6 +619,7 @@ read_ref(char* branch_name)
     ref_path = cat_str(3, get_dot_dir(), HEADS_DIR, branch_name);
     ref_file = fopen(ref_path, "rb");
     if (ref_file == NULL) { // no commits
+        perror("read_rf > fopen");
         return NULL;
     }
 

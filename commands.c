@@ -308,6 +308,10 @@ log_horizon(void)
     char* commit_path;
 
     cur_commit.hash = get_head_commit();
+    if (cur_commit.hash == NULL) {
+        printf("There are no commits, get to work!\n");
+        return 0;
+    }
 
     while (cur_commit.hash != NULL) {
         read_commit(&cur_commit); 

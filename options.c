@@ -24,9 +24,13 @@ static char global_doc[] = "\
 9it - The version control system that is totally not git\v\
 Commands:\n\
     add\n\
+    branch\n\
     cat\n\
+    checkout\n\
     commit\n\
     init\n\
+    log\n\
+    revert\n\
 ";
 static ArgpOption global_options[] = {
     {0}
@@ -41,7 +45,6 @@ Argp global_argp = {
 /* ADD subcommand */
 static char add_doc[] = "stages files for commit";
 static ArgpOption add_options[] = {
-    {"all", 'a', 0, 0, "add all files in working directory to index"},
     {"update", 'u', 0, 0, "stages all tracked files"},
     {0}
 };
@@ -212,9 +215,6 @@ static error_t
 parse_add_opt(int key, char* arg, ArgpState* state)
 {
     switch (key) {
-        case 'a':
-            printf("Add all option\n");
-            break;
         case 'u':
             printf("Add update option\n");
             break;
