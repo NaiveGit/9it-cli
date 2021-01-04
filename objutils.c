@@ -2,6 +2,8 @@
 #include "headers/fileutils.h"
 #include "headers/globals.h"
 
+int was_file_deleted(char* file_path);
+
 int
 write_blob(char* file_path)
 {
@@ -327,30 +329,17 @@ hash_commit(Commit* commit)
     return 0;
 }
 
-/* TODO: make path relative to .9it folder or repo root */
 int
 add_index_item(char* file_path)
 {
     char* absolute_path;
-    FILE* file_stream;
-    unsigned char* hash;
-    Stat file_stat;
     char* out_path;
     FILE* index_file;
+    FILE* file_stream;
     int index_header_entries;
-
-    /* grab file stats */
-    absolute_path = rcat_str(2, get_repo_root(), file_path);
-    if (lstat(absolute_path, &file_stat) == -1) {
-        perror("add_index_item > lstat");
-        return -1; 
-    }
-    free(absolute_path);
-
-    file_stream = fopen(file_path, "rb");
-    hash = hash_stream(file_stream);
-    fclose(file_stream);
-
+    unsigned char* hash;
+    Stat file_stat;
+    
     /* build the binary */
     out_path = cat_str(2, get_dot_dir(), INDEX_FILE);
     index_file = fopen(out_path, "r+b");
@@ -366,29 +355,85 @@ add_index_item(char* file_path)
     index_header_entries += 1;
     fseek(index_file, HEADER_ENTRY_NUM_START, SEEK_SET);
     fwrite(&index_header_entries, HEADER_ENTRY_NUM_LENGTH, 1, index_file);
-    
+
     /* append new binary to end of index */
     fseek(index_file, 0, SEEK_END);
-    fwrite(&file_stat.st_ctime, sizeof(time_t), 1, index_file);
-    fwrite(&file_stat.st_mtime, sizeof(time_t), 1, index_file);
-    fwrite(&file_stat.st_dev, sizeof(uint32_t), 1, index_file);
-    fwrite(&file_stat.st_ino, sizeof(uint32_t), 1, index_file);
-    fwrite(&file_stat.st_mode, sizeof(uint32_t), 1, index_file);
-    fwrite(&file_stat.st_uid, sizeof(uint32_t), 1, index_file);
-    fwrite(&file_stat.st_gid, sizeof(uint32_t), 1, index_file);
-    fwrite(&file_stat.st_size, sizeof(uint32_t), 1, index_file);
-    write_hash(index_file, hash);
-    fwrite(file_path, 1, strlen(file_path), index_file);
-    write_null(index_file); // index entry ends with null character
 
-    /* clean up */
-    /* free(&index); */
-    /* also free index array */
+    if (was_file_deleted(file_path) == 0) {
+        /* grab file stats */
+        absolute_path = rcat_str(2, get_repo_root(), file_path);
+
+        if (lstat(absolute_path, &file_stat) == -1) {
+            perror("add_index_item > lstat");
+            return -1; 
+        }
+
+        file_stream = fopen(file_path, "rb");
+        hash = hash_stream(file_stream);
+        fclose(file_stream);
+        
+        fwrite(&file_stat.st_ctime, sizeof(time_t), 1, index_file);
+        fwrite(&file_stat.st_mtime, sizeof(time_t), 1, index_file);
+        fwrite(&file_stat.st_dev, sizeof(uint32_t), 1, index_file);
+        fwrite(&file_stat.st_ino, sizeof(uint32_t), 1, index_file);
+        fwrite(&file_stat.st_mode, sizeof(uint32_t), 1, index_file);
+        fwrite(&file_stat.st_uid, sizeof(uint32_t), 1, index_file);
+        fwrite(&file_stat.st_gid, sizeof(uint32_t), 1, index_file);
+        fwrite(&file_stat.st_size, sizeof(uint32_t), 1, index_file);
+        write_hash(index_file, hash);
+        fwrite(file_path, 1, strlen(file_path), index_file);
+        write_null(index_file); // index entry ends with null character
+
+        /* clean up */
+        /* free(&index); */
+        /* also free index array */
+
+        free(absolute_path);
+        free(hash);
+
+    } else {
+        
+        int nullblock = 2*sizeof(time_t)+6*sizeof(uint32_t);
+        for (int i = 0; i < nullblock; i++) {
+            write_null(index_file);
+        }
+        write_hash(index_file, DEL_HASH);
+        fwrite(file_path, 1, strlen(file_path), index_file);
+        write_null(index_file); // index entry ends with null character
+        
+    }
 
     fclose(index_file);
-    free(hash);
 
     return 0;
+}
+
+int
+was_file_deleted(char* file_path)
+{
+    unsigned char* latest_commit_hash;
+    char** previous_files;
+    char* previous_file;
+    int ind;
+
+    /* check to see if file was deleted */
+    /* latest_commit_hash = get_head_commit(); */
+    /* previous_files = list_all_objects(latest_commit_hash); */
+    /* free(latest_commit_hash); */
+
+    /* ind = 0; */
+    /* while ((previous_file = previous_files[ind]) != 0) { */
+        
+    /*     if (strcmp(previous_file, file_path) == 0) { */
+    /*         return 1; */
+    /*     } */
+
+    /*     ind += 1; */             
+    /* } */
+
+    /* return 0; */
+    return 1;
+
 }
 
 int // take in path relative to repo root
