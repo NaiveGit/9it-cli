@@ -24,9 +24,13 @@ static char global_doc[] = "\
 9it - The version control system that is totally not git\v\
 Commands:\n\
     add\n\
+    branch\n\
     cat\n\
+    checkout\n\
     commit\n\
     init\n\
+    log\n\
+    revert\n\
 ";
 static ArgpOption global_options[] = {
     {0}
@@ -41,7 +45,6 @@ Argp global_argp = {
 /* ADD subcommand */
 static char add_doc[] = "stages files for commit";
 static ArgpOption add_options[] = {
-    {"all", 'a', 0, 0, "add all files in working directory to index"},
     {"update", 'u', 0, 0, "stages all tracked files"},
     {0}
 };
@@ -77,6 +80,18 @@ Argp cat_argp = {
     parse_cat_opt,
     0,
     cat_doc
+};
+
+/* CHECKOUT subcommand */
+static char checkout_doc[] = "switches branches";
+static ArgpOption checkout_options[] = {
+    {0}
+};
+Argp checkout_argp = {
+    checkout_options,
+    parse_checkout_opt,
+    0,
+    checkout_doc
 };
 
 /* COMMIT subcommand */
@@ -171,6 +186,8 @@ parse_global_opt(int key, char* arg, ArgpState* state)
                 parse_command("branch", &branch_argp, state);
             } else if (strcmp(arg, "cat") == 0) {
                 parse_command("cat", &cat_argp, state);
+            } else if (strcmp(arg, "checkout") == 0) {
+                parse_command("checkout", &checkout_argp, state);
             } else if (strcmp(arg, "commit") == 0) {
                 /* printf("Commit command!\n"); */
                 parse_command("commit", &commit_argp, state);
@@ -198,9 +215,6 @@ static error_t
 parse_add_opt(int key, char* arg, ArgpState* state)
 {
     switch (key) {
-        case 'a':
-            printf("Add all option\n");
-            break;
         case 'u':
             printf("Add update option\n");
             break;
@@ -251,6 +265,21 @@ parse_cat_opt(int key, char* arg, ArgpState* state)
 
         case 'p':
             cat(arg);
+            break;
+
+        default:
+            return ARGP_ERR_UNKNOWN;
+    }
+    return 0;
+}
+
+static error_t
+parse_checkout_opt(int key, char* arg, ArgpState* state)
+{
+    switch (key) {
+
+        case ARGP_KEY_ARG: 
+            checkout(arg);
             break;
 
         default:
