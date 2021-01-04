@@ -1,7 +1,7 @@
 #include "headers/objutils.h"
 #include "headers/fileutils.h"
 #include "headers/globals.h"
-
+#include "headers/nodeutils.h"
 int was_file_deleted(char* file_path);
 
 int
@@ -417,21 +417,22 @@ was_file_deleted(char* file_path)
     int ind;
 
     /* check to see if file was deleted */
-    /* latest_commit_hash = get_head_commit(); */
-    /* previous_files = list_all_objects(latest_commit_hash); */
-    /* free(latest_commit_hash); */
+    latest_commit_hash = get_head_commit();
+    previous_files = list_all_objects(latest_commit_hash);
+    printf("hello\n");
+    free(latest_commit_hash);
+    printf("This is the prvious files %p\n",previous_files[0]);
 
-    /* ind = 0; */
-    /* while ((previous_file = previous_files[ind]) != 0) { */
+    ind = 0;
+    while ((previous_file = previous_files[ind]) != 0) {
         
-    /*     if (strcmp(previous_file, file_path) == 0) { */
-    /*         return 1; */
-    /*     } */
+        if (strcmp(previous_file, file_path) == 0) {
+            return 1;
+        }
 
-    /*     ind += 1; */             
-    /* } */
+        ind += 1;             
+    }
 
-    /* return 0; */
     return 1;
 
 }

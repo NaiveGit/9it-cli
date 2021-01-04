@@ -83,7 +83,7 @@ commit_tree(void)
     for (int i = 0; i < index->index_length; i++) {
         IndexItem current = index->index_items[i];
         printf("Current Index: Name: %s, Hash: %s \n",current.file_path,hash_to_string(current.hash)); 
-        if (strcmp(DEL_HASH,current.hash) == 0) {
+        if (memcmp(DEL_HASH,current.hash,SHA_DIGEST_LENGTH) == 0) {
             delete_to(root,current);
         }
         else {
@@ -455,15 +455,19 @@ char**
 list_all_objects(unsigned char* commit_hash)
 {
     char** objects;
+    objects = malloc(0);
     int num = 0;
     int* size = &num;
-    Commit* c = get_previous_commit(commit_hash);
-    Tree* root;
-    root = malloc(sizeof(Tree));
-    duplicate_tree(c->root_tree_hash,"",root);
-    list_all_objects_helper(root,objects,size);
+    if (NULL == commit_hash) {
+        Commit* c = get_previous_commit(commit_hash);
+        Tree* root;
+        root = malloc(sizeof(Tree));
+        duplicate_tree(c->root_tree_hash,"",root);
+        list_all_objects_helper(root,objects,size);
+    }
     objects = realloc(objects,((*size)+1)*sizeof(char*));
-    objects[*size] = NULL;
+    objects[*size] = 0;
+    *size+=1;
     return objects;
 }
 
