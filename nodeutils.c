@@ -9,11 +9,16 @@ void delete_to_helper(Tree* root, char* nextFolder, char* path);
 void delete(Tree* root,int num);
 void revert_commit(unsigned char* t_hash);
 
-//Making the Tree:
+// Making the Tree:
 Tree* init_tree(Tree* root);
 void write_full_tree(Tree* root);
 Tree* duplicate_tree(unsigned char* hash, char* name, Tree* root);
 void hash_all(Tree* root);
+
+// Status
+char** compare_index_commit(void);
+char** compare_index_working(void);
+char** get_untracked(void);
 
 // Helper functions:
 int find_child(Tree* root, char* path);
@@ -23,6 +28,9 @@ void erase_tree(Tree* root);
 void repopulate(Tree* root);
 void print_whole_tree(Tree* root);
 int clean_folders(Tree* root);
+char** list_all_objects(unsigned char* commit_hash);
+void list_all_objects_helper(Tree* root,char** objects, int* size);
+Commit* get_previous_commit(char* recent_commit_ptr);
 
 // Commit the tree object
 // What if the commit is EMPTY?? 
@@ -36,12 +44,9 @@ commit_tree(void)
     if (NULL != recent_commit_ptr){
         // File exists
         printf("Commiting with an existing commit! \n");
-        Commit* c = malloc(sizeof(Commit));
-        c->hash = recent_commit_ptr;
-        read_commit(c);
-        // Commit* curcommit = read_commit(recent_commit_ptr);
+        Commit* c;
+        c = get_previous_commit(recent_commit_ptr);
         duplicate_tree(c->root_tree_hash, "", root);
-         
         // When adding, there is a possibility that the hash will be different. In that case, 
         // Find it, and perform logic to check if hash is the same.
         // Don't worry about folders because those will be rehashed. 
@@ -78,16 +83,15 @@ commit_tree(void)
     for (int i = 0; i < index->index_length; i++) {
         IndexItem current = index->index_items[i];
         printf("Current Index: Name: %s, Hash: %s \n",current.file_path,hash_to_string(current.hash)); 
-        if (file_exists(current.file_path) == 1) {
-            add_to(root,current);
+        if (strcmp(DEL_HASH,current.hash) == 0) {
+            delete_to(root,current);
         }
         else {
-            delete_to(root,current);
+            add_to(root,current);
         }
     }
     clean_folders(root);
     hash_all(root);
-    print_whole_tree(root);
     write_full_tree(root);
     free(recent_commit_ptr);
     return root;
@@ -113,7 +117,6 @@ void revert_commit(unsigned char* t_hash) {
 
     printf("Let there be life initiate\n");
     repopulate(root);  
-    
 }
 
 // For adding files
@@ -259,12 +262,8 @@ void
 repopulate(Tree* root)
 {
     if (root->nodeType == NodeType_blob) {
-       char* filepath;
-       filepath = get_repo_root();
-       filepath = realloc(filepath,(strlen(filepath)+strlen(root->name)+1));
-       strcat(filepath,root->name);
-       printf("Adding file: %s\n",filepath);
-       read_blob(root->hash,filepath);
+       printf("Adding file: %s\n",root->name);
+       read_blob(root->hash,root->name);
     }
     else {
         for (int i = 0; i < root->cnum; i++) {
@@ -307,6 +306,50 @@ hash_all(Tree* root)
        hash_tree(root);
    } 
 }
+
+// Status
+char** 
+compare_index_commit(void)
+{
+    Tree* root; 
+    root = malloc(sizeof(Tree)); 
+    root->cnum = 0;
+    //First check if head exists
+    unsigned char* recent_commit_ptr = get_head_commit();
+    if (NULL != recent_commit_ptr){
+        // File exists
+        printf("Comparing index with an existing commit! \n");
+        Commit* c;
+        c = get_previous_commit(recent_commit_ptr);
+        duplicate_tree(c->root_tree_hash, "", root);
+    }
+    else {
+        printf("There is no previous commit, so list everything in index.\n");
+    }
+    Index* index;
+    index = read_index();
+    for (int i = 0; i < index->index_length; i++) {
+        IndexItem current = index->index_items[i];
+        printf("Current Index: Name: %s, Hash: %s \n",current.file_path,hash_to_string(current.hash)); 
+        if (strcmp(DEL_HASH,current.hash) == 0) {
+            printf("delete check\n");
+        }
+        else {
+            printf("add check\n");
+        }
+    }
+}
+char** 
+compare_index_working(void)
+{
+
+}
+char** 
+get_untracked(void)
+{
+
+}
+
 
 // Duplicates the tree
 Tree*
@@ -394,4 +437,47 @@ clean_folders(Tree* root)
         }
         return 1;
     }
+}
+
+Commit*
+get_previous_commit(char* recent_commit_ptr)
+{
+    Commit* c = malloc(sizeof(Commit));
+    c->hash = recent_commit_ptr;
+    read_commit(c);
+    return c;
+}
+
+
+//List All the objects in the tree
+// Imma need to get size. Also, i should also have a int pointer. 
+char**
+list_all_objects(unsigned char* commit_hash)
+{
+    char** objects;
+    int num = 0;
+    int* size = &num;
+    Commit* c = get_previous_commit(commit_hash);
+    Tree* root;
+    root = malloc(sizeof(Tree));
+    duplicate_tree(c->root_tree_hash,"",root);
+    list_all_objects_helper(root,objects,size);
+    objects = realloc(objects,((*size)+1)*sizeof(char*));
+    objects[*size] = NULL;
+    return objects;
+}
+
+void
+list_all_objects_helper(Tree* root,char** objects, int* size) {
+    if (root->nodeType == NodeType_blob) {
+        objects = realloc(objects,((*size)+1)*sizeof(char*));
+        objects[*size] = root->name;
+        *size +=1;
+    }
+    else {
+        for (int i = 0; i < root->cnum; i++) {
+            list_all_objects_helper(&root->children[i],objects,size);
+        }
+    }
+
 }
