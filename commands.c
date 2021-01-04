@@ -127,6 +127,7 @@ cat(char* obj_path)
 
             child = tree.children[i];
             printf("%d %s %s\n", child.nodeType, hash_to_string(child.hash), child.name);
+            printf("\n");
         }
 
     } else if (memcmp(type, COMMIT_TYPE, HEADER_TYPE_LENGTH) == 0) {
@@ -148,6 +149,7 @@ cat(char* obj_path)
         printf("Committer: %s\n", commit.committer);
         /* printf("") */ /* time stamp */
         printf("Message: %s\n", commit.msg);
+        printf("\n");
 
     } else {
         printf("This does not appear to be a 9it object\n");

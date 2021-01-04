@@ -105,6 +105,7 @@ Argp log_argp = {
 /* REVERT subcommand */
 static char revert_doc[] = "reverts lol";
 static ArgpOption revert_options[] = {
+    {"hash", 'h', "hash", 0, "bare grylls"},
     {0}
 };
 Argp revert_argp = {
@@ -162,6 +163,8 @@ parse_global_opt(int key, char* arg, ArgpState* state)
                 parse_command("init", &init_argp, state);
             } else if (strcmp(arg, "log") == 0) {
                 parse_command("log", &log_argp, state);
+            } else if (strcmp(arg, "revert") == 0) {
+                parse_command("revert", &revert_argp, state);
             } else {
                 /* argp_error(state, "%s is not a valid command", arg); */    
                 argp_usage(state);
@@ -295,12 +298,8 @@ parse_revert_opt(int key, char* arg, ArgpState* state)
 {
     switch (key) {
 
-        case ARGP_KEY_NO_ARGS: 
-            
-            if (state->argc == 1) {
-                revert(arg);
-            }
-            
+        case 'h':
+            revert(arg);
             break;
 
         default:
