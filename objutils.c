@@ -136,19 +136,22 @@ write_commit(Commit* commit)
 }
 
 int
-read_blob(unsigned char* hash, char* absolute_out_path)
+read_blob(unsigned char* hash, char* out_path)
 {
-    // make other arg not absolute path :<
+
     char* blob_path;
     char* hexstring;
+    char* absolute_path;
 
     hexstring = hash_to_string(hash);
     blob_path = cat_str(3, get_dot_dir(), OBJ_DIR, hexstring);
     free(hexstring);
+    absolute_path = cat_str(2, get_repo_root(), out_path);
     
-    uncompress_file(blob_path, absolute_out_path);
+    uncompress_file(blob_path, absolute_path);
 
     free(blob_path);
+    free(absolute_path);
 
     return 0;
 }

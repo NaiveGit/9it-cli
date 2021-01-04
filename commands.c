@@ -31,14 +31,17 @@ init(char* root)
     char* index_file = cat_str(2, root, INDEX_FILE);
     char* head_file = cat_str(2, root, HEAD_FILE);
     char* ident_file = cat_str(2, root, IDENT_FILE);
+    char* branch_file = cat_str(3, root, HEADS_DIR, HEAD_DEFAULT);
 
     write_to_file(index_file, INDEX_DEFAULT_HEADER, HEADER_LENGTH); //index file
     write_to_file(head_file, HEAD_DEFAULT, strlen(HEAD_DEFAULT)+1);
     write_to_file(ident_file, "", 0);
+    write_to_file(branch_file, "", 0);
 
     free(index_file);
     free(head_file);
     free(ident_file);
+    free(branch_file);
 
     printf("Successfully initialized 9it in current working directory.\n");
 
@@ -89,6 +92,84 @@ add(char* local_path)
 }
 
 int
+branch(char* branch_name)
+{ // create new branch
+    char* new_branch_path;
+
+    new_branch_path = cat_str(3, get_dot_dir(), HEADS_DIR, branch_name);
+    /* check to see if branch was created already */
+    if (access(new_branch_path, F_OK) == 0) {
+        printf("Branch '%s' already exists\n", branch_name); 
+        return -1;
+    }
+
+    /* create new branch file */
+    write_to_file(new_branch_path, "", 0);
+    free(new_branch_path);
+
+    return 0;
+
+}
+
+int
+branch_delete(char* branch_name)
+{
+    char* branch_path;
+
+    if (strcmp(branch_name, HEAD_DEFAULT) == 0) {
+        printf("You cannot delete the main branch, respect your senpais.\n");
+        return -1;
+    }
+
+    branch_path = cat_str(3, get_dot_dir(), HEADS_DIR, branch_name);
+    if (remove(branch_path) == -1) {
+        printf("Could not delete branch: %s\n", branch_name);
+        return -1;
+    }
+
+    free(branch_path);
+
+    return 0;
+}
+
+int
+branch_info(void)
+{
+    char* branch_path;
+    DIR* dir;
+    Dirent* dirent;
+    char* cur_branch;
+
+    branch_path = cat_str(2, get_dot_dir(), HEADS_DIR);
+    dir = opendir(branch_path);
+    free(branch_path);
+    if (dir == NULL) {
+        perror("branch_info > opendir");
+        return -1;
+    }
+
+    cur_branch = get_cur_branch();
+
+    /* list all files in heads */
+    while ((dirent = readdir(dir)) != NULL) {
+
+        if (strcmp(dirent->d_name, "..") == 0) continue; 
+        if (strcmp(dirent->d_name, ".") == 0) continue; 
+
+        if (strcmp(dirent->d_name, cur_branch) == 0) {
+            printf("*" "\x1b[32m" " %s\n" "\x1b[0m", dirent->d_name);
+        } else {
+            printf("  %s\n", dirent->d_name);
+        }
+    }
+
+    free(cur_branch);
+    closedir(dir);
+
+    return 0;
+}
+
+int
 cat(char* obj_path)
 {
     FILE* obj_file;
@@ -105,12 +186,12 @@ cat(char* obj_path)
     fread(&type, sizeof(char), HEADER_TYPE_LENGTH, obj_file);
     fclose(obj_file);
 
-    if (memcmp(type, BLOB_TYPE, HEADER_TYPE_LENGTH) == 0) {
+    if (strcmp(type, BLOB_TYPE) == 0) {
         printf("\x1b[36m" "=-=-=-=-=-=-=-=  9it BLOB  =-=-=-=-=-=-=-=\n" "\x1b[0m");
         printf("(probably)\n");
         return 0;
 
-    } else if (memcmp(type, TREE_TYPE, HEADER_TYPE_LENGTH) == 0) {
+    } else if (strcmp(type, TREE_TYPE) == 0) {
         Tree tree;
         unsigned char* hash;
 
@@ -130,7 +211,7 @@ cat(char* obj_path)
             printf("\n");
         }
 
-    } else if (memcmp(type, COMMIT_TYPE, HEADER_TYPE_LENGTH) == 0) {
+    } else if (strcmp(type, COMMIT_TYPE) == 0) {
         Commit commit;
         unsigned char* hash;
 

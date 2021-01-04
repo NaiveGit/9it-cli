@@ -8,7 +8,9 @@ static void parse_command(char* cmd_name, Argp* argp, ArgpState* state);
 
 static error_t parse_global_opt(int key, char* arg, ArgpState* state);
 static error_t parse_add_opt(int key, char* arg, ArgpState* state);
+static error_t parse_branch_opt(int key, char* arg, ArgpState* state);
 static error_t parse_cat_opt(int key, char* arg, ArgpState* state);
+static error_t parse_checkout_opt(int key, char* arg, ArgpState* state);
 static error_t parse_commit_opt(int key, char* arg, ArgpState* state);
 static error_t parse_init_opt(int key, char* arg, ArgpState* state);
 static error_t parse_log_opt(int key, char* arg, ArgpState* state);
@@ -48,6 +50,19 @@ Argp add_argp = {
     parse_add_opt,
     0,
     add_doc
+};
+
+/* BRANCH subcommand */
+static char branch_doc[] = "branch stuff";
+static ArgpOption branch_options[] = {
+    {"delete", 'd', "branch-name", 0, "deletes a branch"},
+    {0}
+};
+Argp branch_argp = {
+    branch_options,
+    parse_branch_opt,
+    0,
+    branch_doc
 };
 
 /* CAT subcommand */
@@ -105,7 +120,6 @@ Argp log_argp = {
 /* REVERT subcommand */
 static char revert_doc[] = "reverts lol";
 static ArgpOption revert_options[] = {
-    {"hash", 'h', "hash", 0, "bare grylls"},
     {0}
 };
 Argp revert_argp = {
@@ -153,6 +167,8 @@ parse_global_opt(int key, char* arg, ArgpState* state)
             if (strcmp(arg, "add") == 0 || strcmp(arg, "stage") == 0) {
                 /* printf("Add command!\n"); */
                 parse_command("add", &add_argp, state);
+            } else if (strcmp(arg, "branch") == 0) {
+                parse_command("branch", &branch_argp, state);
             } else if (strcmp(arg, "cat") == 0) {
                 parse_command("cat", &cat_argp, state);
             } else if (strcmp(arg, "commit") == 0) {
@@ -192,6 +208,32 @@ parse_add_opt(int key, char* arg, ArgpState* state)
             /* add_index_item(arg); */
             add(arg);
             break;
+        default:
+            return ARGP_ERR_UNKNOWN;
+    }
+    return 0;
+}
+
+static error_t
+parse_branch_opt(int key, char* arg, ArgpState* state)
+{
+    switch (key) {
+        case ARGP_KEY_ARG: 
+            branch(arg);
+            break;
+
+        case 'd':
+            branch_delete(arg);
+
+            break;
+
+        case ARGP_KEY_NO_ARGS: 
+            
+            if (state->argc == 1) {
+                branch_info();
+            }
+            break;
+
         default:
             return ARGP_ERR_UNKNOWN;
     }
@@ -298,8 +340,9 @@ parse_revert_opt(int key, char* arg, ArgpState* state)
 {
     switch (key) {
 
-        case 'h':
+        case ARGP_KEY_ARG: 
             revert(arg);
+            /* state->next = state->argc; */
             break;
 
         default:
