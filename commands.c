@@ -149,7 +149,6 @@ cat(char* obj_path)
         printf("Committer: %s\n", commit.committer);
         /* printf("") */ /* time stamp */
         printf("Message: %s\n", commit.msg);
-        printf("\n");
 
     } else {
         printf("This does not appear to be a 9it object\n");

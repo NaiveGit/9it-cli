@@ -138,9 +138,13 @@ write_commit(Commit* commit)
 int
 read_blob(unsigned char* hash, char* absolute_out_path)
 {
+    // make other arg not absolute path :<
     char* blob_path;
+    char* hexstring;
 
-    blob_path = cat_str(3, get_dot_dir(), OBJ_DIR, hash);
+    hexstring = hash_to_string(hash);
+    blob_path = cat_str(3, get_dot_dir(), OBJ_DIR, hexstring);
+    free(hexstring);
     
     uncompress_file(blob_path, absolute_out_path);
 
