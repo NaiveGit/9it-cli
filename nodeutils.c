@@ -112,7 +112,7 @@ void revert_commit(unsigned char* t_hash) {
     duplicate_tree(t_hash,"",root);
 
     printf("Let there be life initiate\n");
-    // let_there_be_life(root);
+    repopulate(root);  
     
 }
 
@@ -245,7 +245,7 @@ erase_tree(Tree* root)
        filepath = get_repo_root();
        filepath = realloc(filepath,(strlen(filepath)+strlen(root->name)+1));
        strcat(filepath,root->name);
-       // remove(filepath); 
+       remove(filepath); 
        printf("Removing file: %s\n",filepath);
     }
     else {
