@@ -41,7 +41,7 @@
 #define HEADER_ENTRY_NUM_START 8
 #define HEADER_ENTRY_NUM_LENGTH 4
 
-
+#define DEL_HASH "\x70\x6f\x6a\x64\x69\x62\x6f\x6a\x20\x69\x62\x77\x66\x20\x62\x20\x65\x6a\x64\x6c"
 
 /* head stuff */
 #define HEAD_DEFAULT "senpai"

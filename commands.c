@@ -106,7 +106,9 @@ cat(char* obj_path)
     fclose(obj_file);
 
     if (memcmp(type, BLOB_TYPE, HEADER_TYPE_LENGTH) == 0) {
-        printf("9it BLOB =-=-=-=-=-=-=-=\n");
+        printf("\x1b[36m" "=-=-=-=-=-=-=-=  9it BLOB  =-=-=-=-=-=-=-=\n" "\x1b[0m");
+        printf("(probably)\n");
+        return 0;
 
     } else if (memcmp(type, TREE_TYPE, HEADER_TYPE_LENGTH) == 0) {
         Tree tree;
@@ -118,7 +120,7 @@ cat(char* obj_path)
         tree.hash = hash;
         read_tree(&tree);
 
-        printf("9it TREE =-=-=-=-=-=-=-=\n");
+        printf("\x1b[32m" "=-=-=-=-=-=-=-=  9it TREE  =-=-=-=-=-=-=-=\n" "\x1b[0m");
         printf("Tree hash: %s\n", hash_to_string(tree.hash));
         for (int i = 0; i < tree.cnum; i++) {
             Tree child;
@@ -136,7 +138,8 @@ cat(char* obj_path)
         commit.hash = hash;
         read_commit(&commit);
 
-        printf("9it COMMIT =-=-=-=-=-=-=-=\n"); /* free the hash_tostrings */
+        printf("\x1b[33m" "=-=-=-=-=-=-=-= 9it COMMIT =-=-=-=-=-=-=-=\n" "\x1b[0m"); 
+        /* free the hash_tostrings */
         printf("Commit hash: %s\n", hash_to_string(commit.hash));
         if (commit.parent_commit_hash != NULL) {
             printf("Previous commit: %s\n", hash_to_string(commit.parent_commit_hash));
@@ -162,7 +165,6 @@ commit(char* commit_msg)
     Commit new_commit;
     Tree* root_tree;
     char* username;
-    unsigned char* parent_commit_hash;
     char* cur_branch;
 
     /* grab the index tree */
@@ -180,6 +182,81 @@ commit(char* commit_msg)
     new_commit.committer = username;
     new_commit.timestamp = time(0);
     new_commit.msg = commit_msg;
+    new_commit.parent_commit_hash = get_head_commit();
+
+    /* write commit */
+    hash_commit(&new_commit); 
+    write_commit(&new_commit);
+
+    /* update refs */
+    cur_branch = get_cur_branch();
+    write_ref(cur_branch, new_commit.hash);
+    free(cur_branch);
+
+    /* clear index */
+    clear_index();
+
+    return 0;
+}
+
+int
+log_horizon(void)
+{
+    Commit cur_commit;
+    char* hexstring;
+    char* commit_path;
+
+    cur_commit.hash = get_head_commit();
+
+    while (cur_commit.hash != NULL) {
+        read_commit(&cur_commit); 
+        
+        /* printf("COMMIT!\n"); */
+        hexstring = hash_to_string(cur_commit.hash);
+        commit_path = cat_str(3, get_dot_dir(), OBJ_DIR, hexstring);
+        cat(commit_path);
+        printf("\n");
+        free(hexstring);
+        free(commit_path);
+
+        cur_commit.hash = cur_commit.parent_commit_hash;
+
+    }
+
+    return 0;
+}
+
+int
+revert(char* hash)
+{
+    unsigned char* commit_hash;
+    Commit rcommit;
+    char* username;
+    Commit new_commit;
+    char* revert_msg;
+    char* cur_branch;
+
+    commit_hash = string_to_hash(hash);
+    rcommit.hash = commit_hash;
+    read_commit(&rcommit);
+    
+    revert_commit(rcommit.root_tree_hash);
+
+    /* get user name */
+    username = getenv(NINEIT_USERNAME);
+    if (username == NULL) {
+        printf("Please set the NINEIT_USERNAME environment variable.\n");
+        exit(1);
+    }
+    
+    /* make commit */
+    new_commit.root_tree_hash = rcommit.root_tree_hash;
+    new_commit.committer = username;
+    new_commit.timestamp = time(0);
+
+    revert_msg = cat_str(2, "Reverted to commit ", hash);
+    new_commit.msg = revert_msg;
+
     new_commit.parent_commit_hash = get_head_commit();
 
     /* write commit */

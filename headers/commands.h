@@ -7,6 +7,8 @@ extern int init(char* root);
 extern int add(char* local_path);
 extern int cat(char* obj_path);
 extern int commit(char* commit_msg);
+extern int log_horizon(void);
+extern int revert(char* hash);
 extern int status(void);
 
 #endif

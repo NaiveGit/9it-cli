@@ -11,6 +11,8 @@ static error_t parse_add_opt(int key, char* arg, ArgpState* state);
 static error_t parse_cat_opt(int key, char* arg, ArgpState* state);
 static error_t parse_commit_opt(int key, char* arg, ArgpState* state);
 static error_t parse_init_opt(int key, char* arg, ArgpState* state);
+static error_t parse_log_opt(int key, char* arg, ArgpState* state);
+static error_t parse_revert_opt(int key, char* arg, ArgpState* state);
 
 static void log_state(ArgpState* state);
 static char* append_argv0(char* str, char* append);
@@ -88,6 +90,30 @@ Argp init_argp = {
     init_doc
 };
 
+/* LOG subcommand */
+static char log_doc[] = "prints out all the commits";
+static ArgpOption log_options[] = {
+    {0}
+};
+Argp log_argp = {
+    log_options,
+    parse_log_opt,
+    0,
+    log_doc
+};
+
+/* REVERT subcommand */
+static char revert_doc[] = "reverts lol";
+static ArgpOption revert_options[] = {
+    {0}
+};
+Argp revert_argp = {
+    revert_options,
+    parse_revert_opt,
+    0,
+    revert_doc
+};
+
 static void
 parse_command(char* cmd_name, Argp* argp, ArgpState* state)
 {
@@ -134,6 +160,8 @@ parse_global_opt(int key, char* arg, ArgpState* state)
             } else if (strcmp(arg, "init") == 0) {
                 /* printf("Init command!\n"); */
                 parse_command("init", &init_argp, state);
+            } else if (strcmp(arg, "log") == 0) {
+                parse_command("log", &log_argp, state);
             } else {
                 /* argp_error(state, "%s is not a valid command", arg); */    
                 argp_usage(state);
@@ -233,6 +261,44 @@ parse_init_opt(int key, char* arg, ArgpState* state)
             // handle no args
             if (state->argc == 1) {
                 init(NON_BARE_DIR);
+            }
+            
+            break;
+
+        default:
+            return ARGP_ERR_UNKNOWN;
+    }
+    return 0;
+}
+
+static error_t
+parse_log_opt(int key, char* arg, ArgpState* state)
+{
+    switch (key) {
+
+        case ARGP_KEY_NO_ARGS: 
+            
+            if (state->argc == 1) {
+                log_horizon();
+            }
+            
+            break;
+
+        default:
+            return ARGP_ERR_UNKNOWN;
+    }
+    return 0;
+}
+
+static error_t
+parse_revert_opt(int key, char* arg, ArgpState* state)
+{
+    switch (key) {
+
+        case ARGP_KEY_NO_ARGS: 
+            
+            if (state->argc == 1) {
+                revert(arg);
             }
             
             break;

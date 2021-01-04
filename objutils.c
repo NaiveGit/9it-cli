@@ -136,15 +136,15 @@ write_commit(Commit* commit)
 }
 
 int
-read_blob(char* blob_path)
-{ 
-    FILE* blob_file;    
+read_blob(unsigned char* hash, char* absolute_out_path)
+{
+    char* blob_path;
 
-    /* check that is is indeed an object */
+    blob_path = cat_str(3, get_dot_dir(), OBJ_DIR, hash);
+    
+    uncompress_file(blob_path, absolute_out_path);
 
-    /* blob_file = fopen(); */
-
-
+    free(blob_path);
 
     return 0;
 }
