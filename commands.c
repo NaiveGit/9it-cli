@@ -54,6 +54,7 @@ add(char* local_path)
 
     char* relative_path;
     Stat file_stat;
+    int is_dir;
 
     /* make local_path relative to repo root */
     relative_path = get_local_path();
@@ -61,16 +62,12 @@ add(char* local_path)
 
     /* check if dir or file */
     if (lstat(local_path, &file_stat) == -1) {
-        perror(NULL);
-        return -1;
+        is_dir = 0;
+    } else {
+        is_dir = !S_ISDIR(file_stat.st_mode) == 0;
     }
 
-    if (S_ISDIR(file_stat.st_mode) == 0) { // not a dir
-        printf("adding %s\n", relative_path);
-        add_index_item(relative_path);
-
-    } else {
-
+    if (is_dir) { 
         /* append a slash if it's not there */
         if (strend(relative_path, "/") == 0) {
             rcat_str(2, relative_path, "/");
@@ -83,6 +80,10 @@ add(char* local_path)
         }
 
         add_index_dir(relative_path);
+
+    } else {
+
+        add_index_item(relative_path);
 
     }
      

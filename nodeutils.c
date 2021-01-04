@@ -458,7 +458,7 @@ list_all_objects(unsigned char* commit_hash)
     objects = malloc(0);
     int num = 0;
     int* size = &num;
-    if (NULL == commit_hash) {
+    if (NULL != commit_hash) {
         Commit* c = get_previous_commit(commit_hash);
         Tree* root;
         root = malloc(sizeof(Tree));

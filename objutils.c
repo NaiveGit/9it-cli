@@ -419,13 +419,12 @@ was_file_deleted(char* file_path)
     /* check to see if file was deleted */
     latest_commit_hash = get_head_commit();
     previous_files = list_all_objects(latest_commit_hash);
-    printf("hello\n");
     free(latest_commit_hash);
-    printf("This is the prvious files %p\n",previous_files[0]);
 
     ind = 0;
     while ((previous_file = previous_files[ind]) != 0) {
         
+        printf("comparing: %s\n", previous_file);
         if (strcmp(previous_file, file_path) == 0) {
             return 1;
         }
@@ -433,7 +432,7 @@ was_file_deleted(char* file_path)
         ind += 1;             
     }
 
-    return 1;
+    return 0;
 
 }
 
@@ -452,7 +451,7 @@ add_index_dir(char* dir_path)
     /* prob need to handle dir_path = "", convert to "." */
     dir = opendir(absolute_path);
     if (dir == NULL) {
-        perror(NULL);
+        perror("add_index_dir > opendir");
         return -1; // need to clean up if add_dir fails halfway
     }
     free(absolute_path);
@@ -510,7 +509,7 @@ read_index(void)
     index_path = cat_str(2, get_dot_dir(), INDEX_FILE);
     index_file = fopen(index_path, "rb");
     free(index_path);
-    if (index_file == NULL) { perror(NULL); return NULL; }
+    if (index_file == NULL) { perror("read_index > fopen"); return NULL; }
 
     /* prob check if index file has right format and such */
     /* perror("Index file may be corrupt"); */
@@ -559,14 +558,10 @@ read_index(void)
 unsigned char*
 get_head_commit(void)
 {
-    unsigned char* head_hash;
+    char* cur_branch;
 
-    head_hash = read_ref(get_cur_branch());
-    if (strlen(head_hash) == 0) {
-        return NULL;
-    }
-
-    return head_hash;
+    cur_branch = get_cur_branch();
+    return read_ref(cur_branch);
 }
 
 int
@@ -599,7 +594,7 @@ get_cur_branch(void)
     out_path = cat_str(2, get_dot_dir(), HEAD_FILE);
     head_file = fopen(out_path, "rb");
     if (head_file == NULL) {
-        perror(NULL);
+        perror("get_cur_branch > fopen");
         return NULL;
     }
     free(out_path);
@@ -625,7 +620,9 @@ read_ref(char* branch_name)
     }
 
     hash = malloc(SHA_DIGEST_LENGTH);
-    fread(hash, sizeof(unsigned char), SHA_DIGEST_LENGTH, ref_file);
+    if (fread(hash, sizeof(unsigned char), SHA_DIGEST_LENGTH, ref_file) != SHA_DIGEST_LENGTH) {
+        hash = NULL;
+    }
 
     free(ref_path);
     fclose(ref_file);

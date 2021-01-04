@@ -180,7 +180,6 @@ parse_global_opt(int key, char* arg, ArgpState* state)
 
         case ARGP_KEY_ARG:
             if (strcmp(arg, "add") == 0 || strcmp(arg, "stage") == 0) {
-                /* printf("Add command!\n"); */
                 parse_command("add", &add_argp, state);
             } else if (strcmp(arg, "branch") == 0) {
                 parse_command("branch", &branch_argp, state);
@@ -189,10 +188,8 @@ parse_global_opt(int key, char* arg, ArgpState* state)
             } else if (strcmp(arg, "checkout") == 0) {
                 parse_command("checkout", &checkout_argp, state);
             } else if (strcmp(arg, "commit") == 0) {
-                /* printf("Commit command!\n"); */
                 parse_command("commit", &commit_argp, state);
             } else if (strcmp(arg, "init") == 0) {
-                /* printf("Init command!\n"); */
                 parse_command("init", &init_argp, state);
             } else if (strcmp(arg, "log") == 0) {
                 parse_command("log", &log_argp, state);
