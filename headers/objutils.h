@@ -88,6 +88,7 @@ extern Index* read_index(void);
 
 /* ref / head related */
 extern unsigned char* get_head_commit(void);
+extern int write_head_commit(char* branch_name);
 extern char* get_cur_branch(void);
 extern unsigned char* read_ref(char* branch_name);
 extern int write_ref(char* branch_name, unsigned char* hash);

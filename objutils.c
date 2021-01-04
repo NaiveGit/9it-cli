@@ -400,7 +400,7 @@ add_index_item(char* file_path)
         write_hash(index_file, DEL_HASH);
         fwrite(file_path, 1, strlen(file_path), index_file);
         write_null(index_file); // index entry ends with null character
-        
+
     }
 
     fclose(index_file);
@@ -559,6 +559,26 @@ unsigned char*
 get_head_commit(void)
 {
     return read_ref(get_cur_branch());
+}
+
+int
+write_head_commit(char* branch_name)
+{
+    char* head_path;
+    FILE* head_file;
+
+    head_path = cat_str(2, get_dot_dir(), HEAD_FILE);
+    head_file = fopen(head_path, "wb");
+    free(head_path);
+    if (head_file == NULL) {
+        perror("write_head_commit > fopen");
+        return -1;
+    }
+
+    fwrite(branch_name, sizeof(char), strlen(branch_name), head_file);
+    fclose(head_file);
+
+    return 0;
 }
 
 char*

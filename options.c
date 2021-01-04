@@ -79,6 +79,18 @@ Argp cat_argp = {
     cat_doc
 };
 
+/* CHECKOUT subcommand */
+static char checkout_doc[] = "switches branches";
+static ArgpOption checkout_options[] = {
+    {0}
+};
+Argp checkout_argp = {
+    checkout_options,
+    parse_checkout_opt,
+    0,
+    checkout_doc
+};
+
 /* COMMIT subcommand */
 static char commit_doc[] = "create a commit";
 static ArgpOption commit_options[] = {
@@ -171,6 +183,8 @@ parse_global_opt(int key, char* arg, ArgpState* state)
                 parse_command("branch", &branch_argp, state);
             } else if (strcmp(arg, "cat") == 0) {
                 parse_command("cat", &cat_argp, state);
+            } else if (strcmp(arg, "checkout") == 0) {
+                parse_command("checkout", &checkout_argp, state);
             } else if (strcmp(arg, "commit") == 0) {
                 /* printf("Commit command!\n"); */
                 parse_command("commit", &commit_argp, state);
@@ -251,6 +265,21 @@ parse_cat_opt(int key, char* arg, ArgpState* state)
 
         case 'p':
             cat(arg);
+            break;
+
+        default:
+            return ARGP_ERR_UNKNOWN;
+    }
+    return 0;
+}
+
+static error_t
+parse_checkout_opt(int key, char* arg, ArgpState* state)
+{
+    switch (key) {
+
+        case ARGP_KEY_ARG: 
+            checkout(arg);
             break;
 
         default:

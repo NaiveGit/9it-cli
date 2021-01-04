@@ -242,6 +242,25 @@ cat(char* obj_path)
 }
 
 int
+checkout(char* branch_name)
+{
+    char* branch_path;
+
+    branch_path = cat_str(2, get_dot_dir(), HEADS_DIR);
+    if (access(branch_path, F_OK) != 0) {
+        printf("Branch %s does not exist\n", branch_name); 
+        return -1;
+    }
+    free(branch_path);
+
+    write_head_commit(branch_name); 
+
+    printf("Switching to branch: %s\n", branch_name);
+
+    return 0;
+}
+
+int
 commit(char* commit_msg)
 { // tree must be hashed and ready
     Commit new_commit;
