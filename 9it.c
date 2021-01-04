@@ -22,5 +22,7 @@ main(int argc, char** argv)
     /* printf("%s\n", get_cwd()); */
     /* printf("%s\n", get_local_path()); */
 
+    /* uncompress_file(".9it/obj/7c48f5778b1d50581ef7e0d5f6344e84d19f1acb", "README-old.md"); */
+
     return 0;
 }

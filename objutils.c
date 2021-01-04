@@ -27,7 +27,8 @@ write_blob(char* file_path)
     if (access(out_path, F_OK) != 0) { // does not exist
 
         /* create the file */
-        write_to_file(out_path, BLOB_DEFAULT_HEADER, HEADER_LENGTH);
+        fseek(file, 0, SEEK_SET);
+        /* write_to_file(out_path, BLOB_DEFAULT_HEADER, HEADER_LENGTH); */
         compress_file(file, out_path); // prob should error check this
     }
 
@@ -130,6 +131,20 @@ write_commit(Commit* commit)
 
     /* clean up */
     fclose(commit_file);
+
+    return 0;
+}
+
+int
+read_blob(char* blob_path)
+{ 
+    FILE* blob_file;    
+
+    /* check that is is indeed an object */
+
+    /* blob_file = fopen(); */
+
+
 
     return 0;
 }

@@ -1,7 +1,7 @@
 #include "headers/globals.h"
 #include "headers/fileutils.h"
 #include "headers/objutils.h"
-#define READ_CHUNK_SIZE 1024
+#define READ_CHUNK_SIZE 128
 
 int 
 mkfolder(char* root, char* dir_name)
@@ -138,15 +138,15 @@ string_to_hash(char* hexstring)
 }
 
 int
-compress_file(FILE* stream, char* outname)
+compress_file(FILE* stream, char* out_path)
 {
     gzFile outfile;
-    size_t rsize;
+    int rsize;
     int fsize;
     char inbuffer[READ_CHUNK_SIZE];
 
-    outfile = gzopen(outname, "ab");
-    if (outfile== NULL) {
+    outfile = gzopen(out_path, "ab");
+    if (outfile == NULL) {
         printf("Something went wrong with writing to %s\n", outfile);
         return -1;
     }
@@ -158,6 +158,43 @@ compress_file(FILE* stream, char* outname)
     }
 
     gzclose(outfile);
+
+    return fsize;
+}
+
+int
+uncompress_file(char* blob_path, char* out_path)
+{
+    gzFile infile;
+    FILE* outfile;
+    size_t rsize;
+    int fsize;
+    char inbuffer[READ_CHUNK_SIZE];
+
+    infile = gzopen(blob_path, "rb"); 
+    outfile = fopen(out_path, "wb");
+
+    if (infile == NULL) {
+        printf("Error opening blob\n");
+        return -1;
+    }
+    if (outfile == NULL) {
+        printf("Error opening uncompressed file\n");
+        return -1;
+    }
+
+    /* maybe check header to see if its a valid object */
+
+    /* printf("seeking %d\n",gzseek(infile, HEADER_LENGTH, SEEK_SET)); */
+
+    fsize = 0;
+    while ((rsize = gzread(infile, inbuffer, READ_CHUNK_SIZE)) > 0) {
+        fwrite(inbuffer, 1, rsize, outfile);
+        fsize += rsize;
+    }
+
+    gzclose(infile);
+    fclose(outfile);
 
     return fsize;
 }

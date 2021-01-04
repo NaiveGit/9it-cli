@@ -72,6 +72,7 @@ extern int write_tree(Tree* tree);
 extern int write_commit(Commit* commit);
 
 /* read objects */
+extern int read_blob(char* blob_path);
 extern int read_tree(Tree* root);
 extern int read_commit(Commit* commit);
 
