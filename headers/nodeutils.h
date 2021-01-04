@@ -22,4 +22,5 @@ tree
 
 extern Tree* commit_tree(void);
 extern void print_tree(Tree* root);
+extern void revert_commit(unsigned char* t_hash);
 #endif

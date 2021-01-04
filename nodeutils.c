@@ -7,6 +7,7 @@ void add_to_helper(Tree* root, Tree* new_node, char* nextFolder,char* path);
 void delete_to(Tree* root, IndexItem current);
 void delete_to_helper(Tree* root, char* nextFolder, char* path);
 void delete(Tree* root,int num);
+void revert_commit(unsigned char* t_hash);
 
 //Making the Tree:
 Tree* init_tree(Tree* root);
@@ -18,6 +19,9 @@ void hash_all(Tree* root);
 int find_child(Tree* root, char* path);
 int file_exists(char* path);
 void print_tree(Tree* root);
+void erase_tree(Tree* root);
+void repopulate(Tree* root);
+void print_whole_tree(Tree* root);
 int clean_folders(Tree* root);
 
 // Commit the tree object
@@ -37,7 +41,7 @@ commit_tree(void)
         read_commit(c);
         // Commit* curcommit = read_commit(recent_commit_ptr);
         duplicate_tree(c->root_tree_hash, "", root);
-        
+         
         // When adding, there is a possibility that the hash will be different. In that case, 
         // Find it, and perform logic to check if hash is the same.
         // Don't worry about folders because those will be rehashed. 
@@ -83,9 +87,33 @@ commit_tree(void)
     }
     clean_folders(root);
     hash_all(root);
+    print_whole_tree(root);
     write_full_tree(root);
     free(recent_commit_ptr);
     return root;
+}
+
+void revert_commit(unsigned char* t_hash) {
+    printf("Commence reverting commit\n");
+    Tree* tree_to_delete;
+    tree_to_delete = malloc(sizeof(Tree));
+    unsigned char* recent_commit_ptr = get_head_commit();
+    if (NULL != recent_commit_ptr){
+        // File exists
+        Commit* c = malloc(sizeof(Commit));
+        c->hash = recent_commit_ptr;
+        read_commit(c);
+        // Commit* curcommit = read_commit(recent_commit_ptr);
+        duplicate_tree(c->root_tree_hash, "", tree_to_delete);
+    }
+    erase_tree(tree_to_delete);
+    Tree* root;
+    root = malloc(sizeof(Tree));
+    duplicate_tree(t_hash,"",root);
+
+    printf("Let there be life initiate\n");
+    // let_there_be_life(root);
+    
 }
 
 // For adding files
@@ -171,13 +199,17 @@ delete_to(Tree* root, IndexItem current)
     delete_to_helper(root,nextFolder,path);
     free(path);
 }
+
 // For deleting files
 void
 delete_to_helper(Tree* root, char* nextFolder, char* path)
 {
     strcat(path,nextFolder);
-    int pos = find_child(root,path);
     nextFolder = strtok(NULL,"/");
+    if (nextFolder != NULL) {
+        strcat(path,"/");
+    }
+    int pos = find_child(root,path);
     if (pos == -1) { // Folder or file doesn't exist, means nothing will happen
         printf("File/Folder doesn't exist so deleted.\n");
     }
@@ -198,12 +230,47 @@ delete_to_helper(Tree* root, char* nextFolder, char* path)
 void
 delete(Tree* root, int num)
 {
-    free(&root->children[num]);
     for (int i = num; i < (root->cnum-1); i++) {
         root->children[i] = root->children[i+1];
     }
     root->children = realloc(root->children,(root->cnum-1)*sizeof(Tree));
     root->cnum-=1;
+}
+
+void
+erase_tree(Tree* root)
+{
+    if (root->nodeType == NodeType_blob) {
+       char* filepath;
+       filepath = get_repo_root();
+       filepath = realloc(filepath,(strlen(filepath)+strlen(root->name)+1));
+       strcat(filepath,root->name);
+       // remove(filepath); 
+       printf("Removing file: %s\n",filepath);
+    }
+    else {
+        for (int i = 0; i< root->cnum; i++) {
+            erase_tree(&root->children[i]);
+        } 
+    }
+}
+
+void
+repopulate(Tree* root)
+{
+    if (root->nodeType == NodeType_blob) {
+       char* filepath;
+       filepath = get_repo_root();
+       filepath = realloc(filepath,(strlen(filepath)+strlen(root->name)+1));
+       strcat(filepath,root->name);
+       printf("Adding file: %s\n",filepath);
+       read_blob(root->hash,filepath);
+    }
+    else {
+        for (int i = 0; i < root->cnum; i++) {
+            repopulate(&root->children[i]);
+        }
+    }
 }
 
 Tree*
@@ -262,6 +329,17 @@ print_tree(Tree* root)
     char* hash = hash_to_string(root->hash);
     printf("Hash: %s \n Name: %s \n Nodetype: %d \n Num of children: %d \n",hash,root->name,root->nodeType,root->cnum);
     free(hash);
+}
+
+void
+print_whole_tree(Tree* root)
+{
+    print_tree(root);
+    printf("Inside of it:\n");
+    for (int i = 0; i < root->cnum; i++) {
+        print_whole_tree(&root->children[i]);
+    }
+    printf("End of Node \n\n");
 }
 
 int
