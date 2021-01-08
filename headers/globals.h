@@ -14,6 +14,7 @@
 
 #define OBJ_DIR "obj/"
 #define REFS_DIR "refs/"
+#define TEMP_DIR "temp/"
 #define HEADS_DIR REFS_DIR "heads/"
 
 #define INDEX_FILE "index"

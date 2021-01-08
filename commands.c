@@ -11,6 +11,7 @@ init(char* root)
     int ind;
     char* dirs[] = {
         "obj/",
+        "temp/",
         "refs/tags/",
         "refs/heads/",
         0
@@ -328,8 +329,9 @@ commit(char* commit_msg)
     write_ref(cur_branch, new_commit.hash);
     free(cur_branch);
 
-    /* clear index */
+    /* clear stuff */
     clear_index();
+    clear_temp();
 
     return 0;
 }

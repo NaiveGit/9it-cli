@@ -84,7 +84,9 @@ extern int hash_commit(Commit* commit);
 extern int add_index_item(char* file_path);
 extern int add_index_dir(char* file_path);
 extern int clear_index(void);
+extern int clear_temp(void);
 extern Index* read_index(void);
+extern int file_in_index(char* local_path);
 
 /* ref / head related */
 extern unsigned char* get_head_commit(void);

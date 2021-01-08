@@ -288,7 +288,33 @@ write_full_tree(Tree* root) {
     write_tree(root);
     for (int i = 0; i < root->cnum; i++) {
         if (root->children[i].nodeType == NodeType_blob) {
-            write_blob(root->children[i].name);
+
+            /* copy file over */
+            char* hexstring;
+            char* blob_path;
+            char* out_path;
+            FILE* blob_file;
+            FILE* out_file;
+
+            hexstring = hash_to_string(root->children[i].hash);
+            blob_path = cat_str(3, get_dot_dir(), TEMP_DIR, hexstring);
+            out_path = cat_str(3, get_dot_dir(), OBJ_DIR, hexstring);
+
+            blob_file = fopen(blob_path, "rb");
+            out_file = fopen(out_path, "wb");
+            free(hexstring);
+            free(blob_path);
+            free(out_path);
+            if (blob_file == NULL || out_file == NULL) {
+                perror("write_full_tree > fopen");
+                return;
+            }
+
+            copy_stream(blob_file, out_file);
+
+            fclose(blob_file);
+            fclose(out_file);
+
         } else {
             write_full_tree(&root->children[i]);
         }

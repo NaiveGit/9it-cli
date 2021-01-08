@@ -22,7 +22,7 @@ write_blob(char* file_path)
     file_hash = hash_stream(file);
     hexstring = hash_to_string(file_hash);
     free(file_hash);
-    out_path = cat_str(3, get_dot_dir(), OBJ_DIR, hexstring);
+    out_path = cat_str(3, get_dot_dir(), TEMP_DIR, hexstring);
     free(hexstring);
 
     /* check to see if object already exists */
@@ -340,6 +340,12 @@ add_index_item(char* file_path)
     unsigned char* hash;
     Stat file_stat;
     
+    /* first check to see if item has already been staged */
+    /* if so, remove the entry */
+    if (file_in_index(file_path) == 1) {
+        return 0;
+    }
+
     /* build the binary */
     out_path = cat_str(2, get_dot_dir(), INDEX_FILE);
     index_file = fopen(out_path, "r+b");
@@ -384,11 +390,10 @@ add_index_item(char* file_path)
         fwrite(file_path, 1, strlen(file_path), index_file);
         write_null(index_file); // index entry ends with null character
 
-        /* clean up */
-        /* free(&index); */
-        /* also free index array */
-
         free(hash);
+
+        /* write to temp folder */
+        write_blob(absolute_path);
 
     } else {
         
@@ -495,6 +500,44 @@ clear_index(void)
     return 0;
 }
 
+int
+clear_temp(void)
+{
+    char* temp_path;
+    DIR* temp_dir;
+    Dirent* dirent;
+    char* blob_path;
+
+    temp_path = cat_str(2, get_dot_dir(), TEMP_DIR);
+    temp_dir = opendir(temp_path);
+    if (temp_dir == NULL) {
+        perror("clear_temp > fopen");
+        return -1;
+    }
+
+    while ((dirent = readdir(temp_dir)) != NULL) {
+
+        if (strcmp(dirent->d_name, "..") == 0) continue; 
+        if (strcmp(dirent->d_name, ".") == 0) continue; 
+
+        /* maybe need to check if file is not dir */
+
+        blob_path = cat_str(2, temp_path, dirent->d_name);
+        
+        if (remove(blob_path) == -1) {
+            printf("Cannot remove %s from temp\n", blob_path);
+        }
+
+        free(blob_path);
+
+    }
+
+    free(temp_path);
+    closedir(temp_dir);
+    
+    return 0;
+}
+
 Index*
 read_index(void)
 {
@@ -552,6 +595,27 @@ read_index(void)
     memcpy(return_index, &index, sizeof(Index));
 
     return return_index;
+}
+
+int
+file_in_index(char* local_path)
+{
+    Index index;
+    IndexItem index_item;
+
+    index = *read_index();
+
+    for (int i = 0; i < index.index_length; i++) {
+        index_item = index.index_items[i];
+
+        if (strcmp(local_path, index_item.file_path) == 0) {
+            return 1;
+        }
+         
+    }
+
+    return 0;
+    
 }
 
 unsigned char*
