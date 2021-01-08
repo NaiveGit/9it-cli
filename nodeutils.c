@@ -43,7 +43,7 @@ commit_tree(void)
     unsigned char* recent_commit_ptr = get_head_commit();
     if (NULL != recent_commit_ptr){
         // File exists
-        printf("Commiting with an existing commit! \n");
+        /* printf("Commiting with an existing commit! \n"); */
         Commit* c;
         c = get_previous_commit(recent_commit_ptr);
         duplicate_tree(c->root_tree_hash, "", root);
@@ -82,7 +82,7 @@ commit_tree(void)
     // Loop Thru index. Check if file exists irl. If it does, try adding it.
     for (int i = 0; i < index->index_length; i++) {
         IndexItem current = index->index_items[i];
-        printf("Current Index: Name: %s, Hash: %s \n",current.file_path,hash_to_string(current.hash)); 
+        /* printf("Current Index: Name: %s, Hash: %s \n",current.file_path,hash_to_string(current.hash)); */ 
         if (memcmp(DEL_HASH,current.hash,SHA_DIGEST_LENGTH) == 0) {
             delete_to(root,current);
         }
@@ -98,7 +98,7 @@ commit_tree(void)
 }
 
 void revert_commit(unsigned char* t_hash) {
-    printf("Commence reverting commit\n");
+    /* printf("Commence reverting commit\n"); */
     Tree* tree_to_delete;
     tree_to_delete = malloc(sizeof(Tree));
     unsigned char* recent_commit_ptr = get_head_commit();
@@ -115,7 +115,7 @@ void revert_commit(unsigned char* t_hash) {
     root = malloc(sizeof(Tree));
     duplicate_tree(t_hash,"",root);
 
-    printf("Let there be life initiate\n");
+    /* printf("Let there be life initiate\n"); */
     repopulate(root);  
 }
 
@@ -173,18 +173,18 @@ add_to_helper(Tree* root, Tree* new_node, char* nextFolder,char* path)
     else {//We've reached the end, add the object file here. 
         int objectpos = find_child(root,path);
         if (objectpos == -1) {
-            printf("Object inserted for the first time! Path: %s\n",path);
+            /* printf("Object inserted for the first time! Path: %s\n",path); */
             root->cnum+=1;
             root->children = realloc(root->children,root->cnum*sizeof(Tree));
             root->children[root->cnum-1] = *(new_node);//Set it equal
         }
         else { // If the object does exist, check the hashes.
             if (strcmp(new_node->hash, root->children[objectpos].hash) != 0) {
-                printf("Object is in tree, but is updated! \n");
+                /* printf("Object is in tree, but is updated! \n"); */
                 root->children[objectpos] = *new_node;
             }
             else {
-                printf("Object has not changed, not changing tree.\n");
+                /* printf("Object has not changed, not changing tree.\n"); */
                 free(new_node);
             }
         }
@@ -214,17 +214,17 @@ delete_to_helper(Tree* root, char* nextFolder, char* path)
     }
     int pos = find_child(root,path);
     if (pos == -1) { // Folder or file doesn't exist, means nothing will happen
-        printf("File/Folder doesn't exist so deleted.\n");
+        /* printf("File/Folder doesn't exist so deleted.\n"); */
     }
     else {
         // If it's a blob, then disconnect.
         if (root->children[pos].nodeType == NodeType_blob) {
-            printf("Disconnecting node.\n");
+            /* printf("Disconnecting node.\n"); */
             delete(root,pos);
         }
         // Otherwise, continue traversing the tree.
         else {
-            printf("Traversing tree to delete\n");
+            /* printf("Traversing tree to delete\n"); */
             delete_to_helper(&root->children[pos],nextFolder,path);
         }
     }
@@ -249,7 +249,7 @@ erase_tree(Tree* root)
        filepath = realloc(filepath,(strlen(filepath)+strlen(root->name)+1));
        strcat(filepath,root->name);
        remove(filepath); 
-       printf("Removing file: %s\n",filepath);
+       /* printf("Removing file: %s\n",filepath); */
     }
     else {
         for (int i = 0; i< root->cnum; i++) {
@@ -262,7 +262,7 @@ void
 repopulate(Tree* root)
 {
     if (root->nodeType == NodeType_blob) {
-       printf("Adding file: %s\n",root->name);
+       /* printf("Adding file: %s\n",root->name); */
        read_blob(root->hash,root->name);
     }
     else {
@@ -275,7 +275,7 @@ repopulate(Tree* root)
 Tree*
 init_tree(Tree* root)
 {
-    printf("Init Tree \n");
+    /* printf("Init Tree \n"); */
     root->nodeType = NodeType_tree;
     root->name = "";
     root->children = malloc(sizeof(Tree));
@@ -318,24 +318,24 @@ compare_index_commit(void)
     unsigned char* recent_commit_ptr = get_head_commit();
     if (NULL != recent_commit_ptr){
         // File exists
-        printf("Comparing index with an existing commit! \n");
+        /* printf("Comparing index with an existing commit! \n"); */
         Commit* c;
         c = get_previous_commit(recent_commit_ptr);
         duplicate_tree(c->root_tree_hash, "", root);
     }
     else {
-        printf("There is no previous commit, so list everything in index.\n");
+        /* printf("There is no previous commit, so list everything in index.\n"); */
     }
     Index* index;
     index = read_index();
     for (int i = 0; i < index->index_length; i++) {
         IndexItem current = index->index_items[i];
-        printf("Current Index: Name: %s, Hash: %s \n",current.file_path,hash_to_string(current.hash)); 
+        /* printf("Current Index: Name: %s, Hash: %s \n",current.file_path,hash_to_string(current.hash)); */ 
         if (strcmp(DEL_HASH,current.hash) == 0) {
-            printf("delete check\n");
+            /* printf("delete check\n"); */
         }
         else {
-            printf("add check\n");
+            /* printf("add check\n"); */
         }
     }
 }
@@ -370,7 +370,7 @@ void
 print_tree(Tree* root)
 {
     char* hash = hash_to_string(root->hash);
-    printf("Hash: %s \n Name: %s \n Nodetype: %d \n Num of children: %d \n",hash,root->name,root->nodeType,root->cnum);
+    /* printf("Hash: %s \n Name: %s \n Nodetype: %d \n Num of children: %d \n",hash,root->name,root->nodeType,root->cnum); */
     free(hash);
 }
 
@@ -378,11 +378,11 @@ void
 print_whole_tree(Tree* root)
 {
     print_tree(root);
-    printf("Inside of it:\n");
+    /* printf("Inside of it:\n"); */
     for (int i = 0; i < root->cnum; i++) {
         print_whole_tree(&root->children[i]);
     }
-    printf("End of Node \n\n");
+    /* printf("End of Node \n\n"); */
 }
 
 int
@@ -393,7 +393,7 @@ file_exists(char* path)
     filepath = get_repo_root();
     filepath = realloc(filepath,(strlen(filepath)+strlen(path)+1));
     strcat(filepath,path);
-    printf("This is the filepath: %s \n",filepath);
+    /* printf("This is the filepath: %s \n",filepath); */
     if (stat(filepath,&sb) == 0) { // File exists
         return 1;
     }

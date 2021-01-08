@@ -116,11 +116,19 @@ int
 branch_delete(char* branch_name)
 {
     char* branch_path;
+    char* cur_branch;
 
     if (strcmp(branch_name, HEAD_DEFAULT) == 0) {
         printf("You cannot delete the main branch, respect your senpais.\n");
         return -1;
     }
+    
+    cur_branch = get_cur_branch();
+    if (strcmp(branch_name, cur_branch) == 0) {
+        printf("You cannot delete the branch you are on, please checkout to another branch\n");
+        return -1;
+    }
+    free(cur_branch);
 
     branch_path = cat_str(3, get_dot_dir(), HEADS_DIR, branch_name);
     if (remove(branch_path) == -1) {
