@@ -21,6 +21,7 @@ char** compare_index_working(void);
 char** get_untracked(void);
 int iterate_to(char* file_path, char* hash);
 void iterate_to_helper(Tree* root, char* nextFolder, char* path, int* flag, char* hash);
+int find_index(Index* index, char* name);
 
 // Helper functions:
 int find_child(Tree* root, char* path);
@@ -431,20 +432,20 @@ iterate_to_helper(Tree* root, char* nextFolder, char* path, int* flag, char* has
     }
     int pos = find_child(root,path);
     if (pos == -1) { // Folder or file doesn't exist, means nothing will happen
-        flag* = 0;
+        *flag = 0;
     }
     else {
         if (root->children[pos].nodeType == NodeType_blob) {
-            if (memcmp(hash,root->children[pos].hash) == 0) {
-                flag* = 1; // If the hash is the same
+            if (memcmp(hash,root->children[pos].hash,SHA_DIGEST_LENGTH) == 0) {
+                *flag = 1; // If the hash is the same
             }
             else {
-                flag* = 2;
+                *flag = 2;
             }
         }
         // Otherwise, continue traversing the tree.
         else {
-            iterate_to_helper(&root->children[pos],nextFolder,path);
+            iterate_to_helper(&root->children[pos],nextFolder,path,flag,hash);
         }
     }
 }
@@ -467,7 +468,7 @@ compare_index_working(void)
             // Generate hashes for them
             int cur = find_index(index,name);
             if (file_exists(name) == 0) { // If file is deleted
-                if (cur == -1 || memcmp(index->children[cur].hash, DEL_HASH) != 0) { // If file isnt in index, or file doesn't have the delete hash
+                if (cur == -1 || memcmp(index->index_items[cur].hash, DEL_HASH, SHA_DIGEST_LENGTH) != 0) { // If file isnt in index, or file doesn't have the delete hash
                     objects = realloc(objects,(num+1)*(sizeof(char*)));
                     objects[num] = name;
                     num+=1;   
@@ -487,31 +488,27 @@ compare_index_working(void)
                     }
                 }
                 else {
-                    if (memcmp(hash,index->children[cur].hash) != 0) {
+                    if (memcmp(hash,index->index_items[cur].hash, SHA_DIGEST_LENGTH) != 0) {
                         objects = realloc(objects,(num+1)*(sizeof(char*)));
                         objects[num] = name;
                         num+=1;
                     }
                 }
-                
             }
-            
-            
             i+=1;
         }
-
     }
-    objects = realloc(objects,((*size)+1)*sizeof(char*));
-    objects[*size] = 0;
-    *size+=1;
+    objects = realloc(objects,(num+1)*sizeof(char*));
+    objects[num] = 0;
+    num+=1;
     return objects;
 }
 
 int
-find_index(Index index, char* name)
+find_index(Index* index, char* name)
 {
     for (int i = 0; i < index->index_length; i++) {
-        if (strcmp(name,index->children[i].file_path) == 0) {
+        if (strcmp(name,index->index_items[i].file_path) == 0) {
             return i;
         }
     }
