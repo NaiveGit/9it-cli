@@ -359,9 +359,9 @@ add_index_item(char* file_path)
     /* append new binary to end of index */
     fseek(index_file, 0, SEEK_END);
 
-    if (was_file_deleted(file_path) == 0) {
-        /* grab file stats */
-        absolute_path = rcat_str(2, get_repo_root(), file_path);
+    /* grab file stats */
+    absolute_path = rcat_str(2, get_repo_root(), file_path);
+    if (was_file_deleted(absolute_path) == 0) {
 
         if (lstat(absolute_path, &file_stat) == -1) {
             perror("add_index_item > lstat");
@@ -388,7 +388,6 @@ add_index_item(char* file_path)
         /* free(&index); */
         /* also free index array */
 
-        free(absolute_path);
         free(hash);
 
     } else {
@@ -403,6 +402,7 @@ add_index_item(char* file_path)
 
     }
 
+    free(absolute_path);
     fclose(index_file);
 
     return 0;
@@ -424,7 +424,6 @@ was_file_deleted(char* file_path)
     ind = 0;
     while ((previous_file = previous_files[ind]) != 0) {
         
-        printf("comparing: %s\n", previous_file);
         if (strcmp(previous_file, file_path) == 0) {
             return 1;
         }

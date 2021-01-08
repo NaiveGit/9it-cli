@@ -1,4 +1,4 @@
-.TH 9IT 1 2021-01-03 9it-0.1
+.TH 9IT 1 2021-01-08 9it-1.0
 .SH NAME
 9it \- totally not git!
 .SH SYNOPSIS
@@ -13,32 +13,61 @@ Displays a list of subcommands.
 .SH SUBCOMMANDS
 .SS add
 Adds files to the index. If a directory is passed, it will recursively add all files in that directory.
+.SS branch
+For all your branching needs. With no arguments, branch simply lists the branches you have created.
+.TP
+<\fIBRANCH-NAME\fP>
+Creates a new branch. Does not automatically switch you over.
+.TP
+\fB-d\fR <\fIBRANCH-NAME\fP>
+Deletes a branch, you cannot delete the 'senpai' branch nor can you delete the branch you are currently on. Does not actually remove any objects, only the reference to the root commit.
 .SS cat
-Displays helpful information about the 9it objects in the objects directory.
+Prints out the internal objects 9it uses in a human readable format. The average user would probably not need this too often.
 .TP
 \fB\-p\fR <\fIOBJECT-FILE\fP>, \fB\-\-print=\fR\fIOBJECT-FILE\fP
-Prints out the contents of object file in human readable text.
+Prints out the contents of object file in, the output format depends on the object type. 
 .TP
 \fB\-t\fR <\fIOBJECT-FILE\fP>, \fB\-\-type=\fR\fIOBJECT-FILE\fP
 Prints out the type of the object file. Possible ones are "Blob", "Tree", and "Commit".
+.SS checkout
+.TP
+<\fIBRANCH-NAME\fP>
+Switches branches.
 .SS commit
 Commit changes, by default, this opens your the editor set by you EDITOR environment variable and prompts you to enter a commit message. Also keep in mind that the NINEIT_USERNAME environment variable needs to be set when calling this.
 .TP
 \fB\-m\fR <\fIMESSAGE\fP> \fB\-\-message=\fR\fIMESSAGE\fP
 Allows you to enter a commit message inline. Remember to wrap the message in quotes if you want to use spaces.
-
 .SS init
 Initialize a new 9it repository in the current working directory. By default, the 9it required files are placed in a hidden .9it directory.
 .TP
 \fB\-b\fR, \fB\-\-bare\fR
 Dumps the contents of the .9it directory into the current directory. This option is mostly used on the server side.
+.SS log
+Prints out the commit history of the current branch starting with the latest.
+.SS revert
+.TP
+<\fICOMMIT-HASH\fR>
+Creates a revert commit in the current branch with contents of the desired commit in history. The full hash must be passed in, so consider using \fB9it log\fR, to copy and paste the hash.
 .SH FILES/DIRECTORY STRUCTURE
 If 9it was initialized without the bare option, then 9it will create a hidden .9it directory inside the current working directory, which contains all the files required.
 Generally, the user does not need to worry about the contents of this directory, but an explanation is included here nonetheless.
+It is highly advised that the user should not mess with any files in this directory.
 .TP
-.BR objects/
+.BR obj/
+Stores blobs, trees and commit files in binary form. Blobs are compressed versions of all the files that were committed. If you wish to read these files for whatever reason, consider using \fB9it cat\fR.
 .TP
 .BR refs/
+Holds the head files for each branch.
+.TP
+.BR 9IT
+This is the file 9it uses to identify the location of the 9it aux directory. Please do not create another file of this name as unexpected things may occur.
+.TP
+.BR HEAD
+This file stores the name of the current branch.
+.TP
+.BR index
+Stores information about staged files.
 .SH ENVIRONMENT
 .TP
 .BR NINEIT_USER_NAME

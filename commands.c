@@ -92,6 +92,31 @@ add(char* local_path)
     return 0;
 }
 
+int 
+add_update(void)
+{
+    unsigned char* latest_commit;
+    char** tracked;
+    char* tracked_file;
+    int ind;
+
+    latest_commit = get_head_commit();
+    tracked = list_all_objects(latest_commit);
+    free(latest_commit);
+
+    ind = 0;
+    while ((tracked_file = tracked[ind]) != 0) {
+
+        add(tracked_file);        
+
+        ind += 1;
+    }
+
+    free(tracked); // also need to free all the elements but whateve 
+
+    return 0;
+}
+
 int
 branch(char* branch_name)
 { // create new branch

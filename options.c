@@ -213,7 +213,7 @@ parse_add_opt(int key, char* arg, ArgpState* state)
 {
     switch (key) {
         case 'u':
-            printf("Add update option\n");
+            add_update();
             break;
         case ARGP_KEY_ARG:
             /* add_index_item(arg); */

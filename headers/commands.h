@@ -5,6 +5,7 @@
 
 extern int init(char* root);
 extern int add(char* local_path);
+extern int add_update(void);
 extern int branch(char* branch_name);
 extern int branch_delete(char* branch_name);
 extern int branch_info(void);
