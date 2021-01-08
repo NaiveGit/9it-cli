@@ -22,7 +22,8 @@ char** get_untracked(void);
 int iterate_to(char* file_path, char* hash);
 void iterate_to_helper(Tree* root, char* nextFolder, char* path, int* flag, char* hash);
 int find_index(Index* index, char* name);
-
+int in_tracked(char** tracked, int num, char* name);
+void get_untracked_helper(char* dir_path, char** objects, int* size);
 // Helper functions:
 int find_child(Tree* root, char* path);
 int file_exists(char* path);
@@ -519,7 +520,91 @@ find_index(Index* index, char* name)
 char** 
 get_untracked(void)
 {
+    char** objects;
+    objects = malloc(0);
+    int num = 0;
+    int* size = &num;
+    
+    unsigned char* recent_commit_ptr = get_head_commit();
+    char** tracked_files = list_all_objects(recent_commit_ptr);
+    get_untracked_helper("",objects,size);
+    objects = realloc(objects,(num+1)*sizeof(char*));
+    objects[num] = 0;
+    num+=1;
 
+    char**  untracked;
+    untracked = malloc(0);
+    int num1 = 0;
+    int iterate = 0;
+    while (objects[iterate] != 0) {
+        if (in_tracked(tracked_files,num,objects[iterate]) == 0) {
+            untracked = realloc(untracked,(num1+1)*sizeof(char*));
+            untracked[num1] = objects[iterate];
+            num1+=1;
+        }
+        iterate+=1;
+    }
+
+    return untracked;
+}
+
+int
+in_tracked(char** tracked, int num, char* name) {
+    for (int i = 0; i < num; i++) {
+        if (strcmp(tracked[i],name) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void
+get_untracked_helper(char* dir_path, char** objects, int* size)
+{
+    char* absolute_path;
+    DIR* dir;
+    Dirent* dirent;
+    char* relative_child_path;
+
+    absolute_path = get_repo_root();
+    absolute_path = realloc(absolute_path, strlen(absolute_path)+strlen(dir_path)+1);
+    strcat(absolute_path, dir_path);
+    
+    /* prob need to handle dir_path = "", convert to "." */
+    dir = opendir(absolute_path);
+    if (dir == NULL) {
+        perror("add_index_dir > opendir");
+    }
+    free(absolute_path);
+
+    while ((dirent = readdir(dir)) != NULL) {
+
+        /* ignore . and .. and .9it */
+        if (strcmp(dirent->d_name, ".9it") == 0) continue; 
+        if (strcmp(dirent->d_name, "..") == 0) continue; 
+        if (strcmp(dirent->d_name, ".") == 0) continue; 
+
+        /* add files */
+        relative_child_path = cat_str(2, dir_path, dirent->d_name);
+
+        if (dirent->d_type == DT_DIR) { // recurse further
+            /* append a slash */
+            rcat_str(2, relative_child_path, "/");
+            get_untracked_helper(relative_child_path,objects,size);
+
+        } else if (dirent->d_type == DT_REG) { // its a normal folder, add it
+            objects = realloc(objects,(*size+1)*(sizeof(char*)));
+            objects[*size] = relative_child_path;
+            *size = *size + 1; 
+            
+        } // not handling smlinks and other file types
+
+        free(relative_child_path);
+    }
+
+    closedir(dir);
+
+     
 }
 
 // Duplicates the tree
