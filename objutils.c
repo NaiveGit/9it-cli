@@ -332,85 +332,44 @@ hash_commit(Commit* commit)
 int
 add_index_item(char* file_path)
 {
-    char* absolute_path;
-    char* out_path;
-    FILE* index_file;
     FILE* file_stream;
-    int index_header_entries;
     unsigned char* hash;
-    Stat file_stat;
-    
-    /* first check to see if item has already been staged */
-    /* if so, remove the entry */
-    if (file_in_index(file_path) == 1) {
-        return 0;
-    }
 
-    /* build the binary */
-    out_path = cat_str(2, get_dot_dir(), INDEX_FILE);
-    index_file = fopen(out_path, "r+b");
-    if (index_file == NULL) {
+    /* hash the file */
+    file_stream = fopen(file_path, "rb");
+    if (file_stream == NULL) {
         perror("add_index_item > fopen");
         return -1;
     }
-    free(out_path);
 
-    /* increment number of index entries in header */
-    fseek(index_file, HEADER_ENTRY_NUM_START, SEEK_SET);
-    fread(&index_header_entries, HEADER_ENTRY_NUM_LENGTH, 1, index_file);
-    index_header_entries += 1;
-    fseek(index_file, HEADER_ENTRY_NUM_START, SEEK_SET);
-    fwrite(&index_header_entries, HEADER_ENTRY_NUM_LENGTH, 1, index_file);
+    hash = hash_stream(file_stream);
+    fclose(file_stream);
 
-    /* append new binary to end of index */
-    fseek(index_file, 0, SEEK_END);
+    switch (iterate_to(file_path, hash)) {
+        case 0: // does not exist
+            // always add to index
+            append_index(file_path);
+            break;
 
-    /* grab file stats */
-    absolute_path = rcat_str(2, get_repo_root(), file_path);
-    if (was_file_deleted(absolute_path) == 0) {
+        case 1: // exists and did not change
+            // always remove from index
+            printf("exists and did not change\n");
+            break;
 
-        if (lstat(absolute_path, &file_stat) == -1) {
-            perror("add_index_item > lstat");
-            return -1; 
-        }
+        case 2: // exists and change
+            // always replace item from index
+            printf("exists and changed\n");
+            break;
 
-        file_stream = fopen(file_path, "rb");
-        hash = hash_stream(file_stream);
-        fclose(file_stream);
-        
-        fwrite(&file_stat.st_ctime, sizeof(time_t), 1, index_file);
-        fwrite(&file_stat.st_mtime, sizeof(time_t), 1, index_file);
-        fwrite(&file_stat.st_dev, sizeof(uint32_t), 1, index_file);
-        fwrite(&file_stat.st_ino, sizeof(uint32_t), 1, index_file);
-        fwrite(&file_stat.st_mode, sizeof(uint32_t), 1, index_file);
-        fwrite(&file_stat.st_uid, sizeof(uint32_t), 1, index_file);
-        fwrite(&file_stat.st_gid, sizeof(uint32_t), 1, index_file);
-        fwrite(&file_stat.st_size, sizeof(uint32_t), 1, index_file);
-        write_hash(index_file, hash);
-        fwrite(file_path, 1, strlen(file_path), index_file);
-        write_null(index_file); // index entry ends with null character
-
-        free(hash);
-
-        /* write to temp folder */
-        write_blob(absolute_path);
-
-    } else {
-        
-        int nullblock = 2*sizeof(time_t)+6*sizeof(uint32_t);
-        for (int i = 0; i < nullblock; i++) {
-            write_null(index_file);
-        }
-        write_hash(index_file, DEL_HASH);
-        fwrite(file_path, 1, strlen(file_path), index_file);
-        write_null(index_file); // index entry ends with null character
-
+        default:
+            printf("add_index_item, iterate_to() returned invalid value\n");
+            return -1;
     }
 
-    free(absolute_path);
-    fclose(index_file);
+    free(hash);
 
     return 0;
+
 }
 
 int
@@ -437,7 +396,6 @@ was_file_deleted(char* file_path)
     }
 
     return 0;
-
 }
 
 int // take in path relative to repo root
@@ -484,6 +442,121 @@ add_index_dir(char* dir_path)
     }
 
     closedir(dir);
+
+    return 0;
+}
+
+int
+append_index(char* file_path)
+{
+    char* absolute_path;
+    char* out_path;
+    FILE* index_file;
+    FILE* file_stream;
+    int index_header_entries;
+    unsigned char* hash;
+    Stat file_stat;
+    
+    /* build the binary */
+    out_path = cat_str(2, get_dot_dir(), INDEX_FILE);
+    index_file = fopen(out_path, "r+b");
+    if (index_file == NULL) {
+        perror("append_index > fopen");
+        return -1;
+    }
+    free(out_path);
+
+    /* increment number of index entries in header */
+    fseek(index_file, HEADER_ENTRY_NUM_START, SEEK_SET);
+    fread(&index_header_entries, HEADER_ENTRY_NUM_LENGTH, 1, index_file);
+    index_header_entries += 1;
+    fseek(index_file, HEADER_ENTRY_NUM_START, SEEK_SET);
+    fwrite(&index_header_entries, HEADER_ENTRY_NUM_LENGTH, 1, index_file);
+
+    /* append new binary to end of index */
+    fseek(index_file, 0, SEEK_END);
+
+    /* grab file stats */
+    absolute_path = rcat_str(2, get_repo_root(), file_path);
+    if (was_file_deleted(absolute_path) == 0) {
+
+        if (lstat(absolute_path, &file_stat) == -1) {
+            perror("append_index > lstat");
+            return -1; 
+        }
+
+        file_stream = fopen(file_path, "rb");
+        hash = hash_stream(file_stream);
+        fclose(file_stream);
+        
+        fwrite(&file_stat.st_ctime, sizeof(time_t), 1, index_file);
+        fwrite(&file_stat.st_mtime, sizeof(time_t), 1, index_file);
+        fwrite(&file_stat.st_dev, sizeof(uint32_t), 1, index_file);
+        fwrite(&file_stat.st_ino, sizeof(uint32_t), 1, index_file);
+        fwrite(&file_stat.st_mode, sizeof(uint32_t), 1, index_file);
+        fwrite(&file_stat.st_uid, sizeof(uint32_t), 1, index_file);
+        fwrite(&file_stat.st_gid, sizeof(uint32_t), 1, index_file);
+        fwrite(&file_stat.st_size, sizeof(uint32_t), 1, index_file);
+        write_hash(index_file, hash);
+        fwrite(file_path, 1, strlen(file_path), index_file);
+        write_null(index_file); // index entry ends with null character
+
+        free(hash);
+
+        /* write to temp folder */
+        write_blob(absolute_path);
+
+    } else {
+        
+        int nullblock = 2*sizeof(time_t)+6*sizeof(uint32_t);
+        for (int i = 0; i < nullblock; i++) {
+            write_null(index_file);
+        }
+        write_hash(index_file, DEL_HASH);
+        fwrite(file_path, 1, strlen(file_path), index_file);
+        write_null(index_file); // index entry ends with null character
+
+    }
+
+    free(absolute_path);
+    fclose(index_file);
+
+    return 0;
+}
+
+int
+remove_index(char* file_path)
+{
+    Index index;
+    int item_ind;
+    IndexItem temp;
+
+    /* read in the index */ 
+    index = *read_index();
+
+    /* find the index of the element we want to delete */
+    item_ind = -1;
+    for (int i = 0; i < index.index_length; i++) {
+        if (strcmp(file_path, index.index_items[i].file_path) == 0) {
+            item_ind = i;
+            break;
+        }
+    }
+    
+    /* nothing to remove */
+    if (item_ind == -1) {
+        return 0;
+    }
+
+    /* swap the desired element with the last element */
+    temp = index.index_items[index.index_length-1];
+    index.index_items[index.index_length-1] = index.index_items[item_ind];
+    index.index_items[item_ind] = temp;
+    index.index_items = realloc(index.index_items, sizeof(IndexItem)*(index.index_length-1));
+
+    index.index_length -= 1;
+
+    /* rewrite to index */
 
     return 0;
 }
@@ -595,27 +668,6 @@ read_index(void)
     memcpy(return_index, &index, sizeof(Index));
 
     return return_index;
-}
-
-int
-file_in_index(char* local_path)
-{
-    Index index;
-    IndexItem index_item;
-
-    index = *read_index();
-
-    for (int i = 0; i < index.index_length; i++) {
-        index_item = index.index_items[i];
-
-        if (strcmp(local_path, index_item.file_path) == 0) {
-            return 1;
-        }
-         
-    }
-
-    return 0;
-    
 }
 
 unsigned char*

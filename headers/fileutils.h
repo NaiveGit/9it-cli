@@ -36,5 +36,4 @@ extern int strend(char* s, char* t);
 extern char* get_cwd(void);
 extern char* get_local_path(void);
 
-
 #endif
