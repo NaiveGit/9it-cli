@@ -544,7 +544,7 @@ get_untracked(void)
         }
         iterate+=1;
     }
-    untracked = realloc(untracked,(num1+1)*sizeof(char));
+    untracked = realloc(untracked,(num1+1)*sizeof(char*));
     untracked[num1] = 0;
     num1+=1
 
