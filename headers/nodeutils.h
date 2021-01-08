@@ -24,5 +24,8 @@ extern Tree* commit_tree(void);
 extern void print_tree(Tree* root);
 extern void revert_commit(unsigned char* t_hash);
 extern char** list_all_objects(unsigned char* commit_hash);
+extern char** list_all_hashes(unsigned char* commit_hash);
+extern int iterate_to(char* file_path, char* hash);
+
 
 #endif

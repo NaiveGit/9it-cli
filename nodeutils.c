@@ -16,9 +16,11 @@ Tree* duplicate_tree(unsigned char* hash, char* name, Tree* root);
 void hash_all(Tree* root);
 
 // Status
-char** compare_index_commit(void);
+// char** compare_index_commit(void);
 char** compare_index_working(void);
 char** get_untracked(void);
+int iterate_to(char* file_path, char* hash);
+void iterate_to_helper(Tree* root, char* nextFolder, char* path, int* flag, char* hash);
 
 // Helper functions:
 int find_child(Tree* root, char* path);
@@ -30,6 +32,8 @@ void print_whole_tree(Tree* root);
 int clean_folders(Tree* root);
 char** list_all_objects(unsigned char* commit_hash);
 void list_all_objects_helper(Tree* root,char** objects, int* size);
+char** list_all_hashes(unsigned char* commit_hash);
+void list_all_hashes_helper(Tree* root,char** objects, int* size);
 Commit* get_previous_commit(char* recent_commit_ptr);
 
 // Commit the tree object
@@ -333,6 +337,7 @@ hash_all(Tree* root)
    } 
 }
 
+/*
 // Status
 char** 
 compare_index_commit(void)
@@ -344,38 +349,181 @@ compare_index_commit(void)
     unsigned char* recent_commit_ptr = get_head_commit();
     if (NULL != recent_commit_ptr){
         // File exists
-        /* printf("Comparing index with an existing commit! \n"); */
+        printf("Comparing index with an existing commit! \n");
         Commit* c;
         c = get_previous_commit(recent_commit_ptr);
         duplicate_tree(c->root_tree_hash, "", root);
     }
     else {
-        /* printf("There is no previous commit, so list everything in index.\n"); */
+        printf("There is no previous commit, so list everything in index.\n");
     }
+    char** objects;
+    objects = malloc(0);
+    int num = 0;
     Index* index;
     index = read_index();
     for (int i = 0; i < index->index_length; i++) {
         IndexItem current = index->index_items[i];
-        /* printf("Current Index: Name: %s, Hash: %s \n",current.file_path,hash_to_string(current.hash)); */ 
+        // printf("Current Index: Name: %s, Hash: %s \n",current.file_path,hash_to_string(current.hash));
         if (strcmp(DEL_HASH,current.hash) == 0) {
-            /* printf("delete check\n"); */
+            // printf("delete check\n"); 
+            if (iterate_to(root,current.file_path,current.hash) >= 1) {
+                // Add it to the list.
+                objects = realloc(objects,(num+1)*sizeof(char*));
+                objects[num] = current.file_path;
+                num+=1;
+            }
         }
         else {
-            /* printf("add check\n"); */
+            // printf("add check\n");
+            if (iterate_to(root,current.file_path,current.hash) == 2) {
+                // Add it to list
+                objects = realloc(objects,(num+1)(sizeof(char*)));
+                objects[num] = current.file_path;
+                num+=1;
+            }
+        }
+    }
+    objects = realloc(objects,((*size)+1)*sizeof(char*));
+    objects[*size] = 0;
+    *size+=1;
+    return objects;
+}
+*/
+int
+iterate_to(char* file_path, char* hash)
+{
+    Tree* root; 
+    root = malloc(sizeof(Tree)); 
+    root->cnum = 0;
+    //First check if head exists
+    unsigned char* recent_commit_ptr = get_head_commit();
+    if (NULL != recent_commit_ptr){
+        // File exists
+        printf("Comparing index with an existing commit! \n");
+        Commit* c;
+        c = get_previous_commit(recent_commit_ptr);
+        duplicate_tree(c->root_tree_hash, "", root);
+    }
+    else {
+        printf("There is no previous commit, so list everything in index.\n");
+    }
+    char* filep = malloc((strlen(file_path) + 2)*sizeof(char));
+    strcpy(filep,file_path);
+    char* path = malloc((strlen(file_path) + 2)*sizeof(char));
+    path[0] = 0; 
+    char* nextFolder = strtok(filep,"/");
+    int fflag = 0;
+    int* flag = &fflag;
+    iterate_to_helper(root, nextFolder, path, flag, hash);
+    free(path);
+    return fflag;
+}
+
+// For deleting files
+void
+iterate_to_helper(Tree* root, char* nextFolder, char* path, int* flag, char* hash)
+{
+    strcat(path,nextFolder);
+    nextFolder = strtok(NULL,"/");
+    if (nextFolder != NULL) {
+        strcat(path,"/");
+    }
+    int pos = find_child(root,path);
+    if (pos == -1) { // Folder or file doesn't exist, means nothing will happen
+        flag* = 0;
+    }
+    else {
+        if (root->children[pos].nodeType == NodeType_blob) {
+            if (memcmp(hash,root->children[pos].hash) == 0) {
+                flag* = 1; // If the hash is the same
+            }
+            else {
+                flag* = 2;
+            }
+        }
+        // Otherwise, continue traversing the tree.
+        else {
+            iterate_to_helper(&root->children[pos],nextFolder,path);
         }
     }
 }
 char** 
 compare_index_working(void)
 {
+    Index* index;
+    index = read_index();
+    char** objects;
+    objects = malloc(0);
+    int num = 0;
+    unsigned char* recent_commit_ptr = get_head_commit();
+    if (NULL != recent_commit_ptr){
+        // File exists
+        /* printf("Commiting with an existing commit! \n"); */
+        char** tracked_files = list_all_objects(recent_commit_ptr);
+        int i = 0;
+        while (tracked_files[i] != 0) {
+            char* name = tracked_files[i];
+            // Generate hashes for them
+            int cur = find_index(index,name);
+            if (file_exists(name) == 0) { // If file is deleted
+                if (cur == -1 || memcmp(index->children[cur].hash, DEL_HASH) != 0) { // If file isnt in index, or file doesn't have the delete hash
+                    objects = realloc(objects,(num+1)*(sizeof(char*)));
+                    objects[num] = name;
+                    num+=1;   
+                }
+            }
+            else {
+                FILE* file;
+                unsigned char* hash;
+                file = fopen(name, "rb");
+                hash = hash_stream(file);
+                int value = iterate_to(name,hash);
+                if (cur == -1) { // Doesn't exist in index, check to see if diff in previous commit tree
+                    if (value == 2) {
+                        objects = realloc(objects,(num+1)*(sizeof(char*)));
+                        objects[num] = name;
+                        num+=1;
+                    }
+                }
+                else {
+                    if (memcmp(hash,index->children[cur].hash) != 0) {
+                        objects = realloc(objects,(num+1)*(sizeof(char*)));
+                        objects[num] = name;
+                        num+=1;
+                    }
+                }
+                
+            }
+            
+            
+            i+=1;
+        }
 
+    }
+    objects = realloc(objects,((*size)+1)*sizeof(char*));
+    objects[*size] = 0;
+    *size+=1;
+    return objects;
 }
+
+int
+find_index(Index index, char* name)
+{
+    for (int i = 0; i < index->index_length; i++) {
+        if (strcmp(name,index->children[i].file_path) == 0) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 char** 
 get_untracked(void)
 {
 
 }
-
 
 // Duplicates the tree
 Tree*
@@ -502,6 +650,40 @@ list_all_objects_helper(Tree* root,char** objects, int* size) {
     if (root->nodeType == NodeType_blob) {
         objects = realloc(objects,((*size)+1)*sizeof(char*));
         objects[*size] = root->name;
+        *size +=1;
+    }
+    else {
+        for (int i = 0; i < root->cnum; i++) {
+            list_all_objects_helper(&root->children[i],objects,size);
+        }
+    }
+}
+
+char**
+list_all_hashes(unsigned char* commit_hash)
+{
+    char** objects;
+    objects = malloc(0);
+    int num = 0;
+    int* size = &num;
+    if (NULL != commit_hash) {
+        Commit* c = get_previous_commit(commit_hash);
+        Tree* root;
+        root = malloc(sizeof(Tree));
+        duplicate_tree(c->root_tree_hash,"",root);
+        list_all_objects_helper(root,objects,size);
+    }
+    objects = realloc(objects,((*size)+1)*sizeof(char*));
+    objects[*size] = 0;
+    *size+=1;
+    return objects;
+}
+
+void
+list_all_hashes_helper(Tree* root,char** objects, int* size) {
+    if (root->nodeType == NodeType_blob) {
+        objects = realloc(objects,((*size)+1)*sizeof(char*));
+        objects[*size] = root->hash;
         *size +=1;
     }
     else {
