@@ -312,8 +312,9 @@ write_full_tree(Tree* root) {
             free(blob_path);
             free(out_path);
             if (blob_file == NULL || out_file == NULL) {
-                perror("write_full_tree > fopen");
-                return;
+                /* perror("write_full_tree > fopen"); */
+                /* return; */
+                continue; // this is not good :<
             }
 
             copy_stream(blob_file, out_file);
@@ -402,7 +403,7 @@ iterate_to(char* file_path, char* hash)
     unsigned char* recent_commit_ptr = get_head_commit();
     if (NULL != recent_commit_ptr){
         // File exists
-        printf("Comparing index with an existing commit! \n");
+        /* printf("Comparing index with an existing commit! \n"); */
         Commit* c;
         c = get_previous_commit(recent_commit_ptr);
         duplicate_tree(c->root_tree_hash, "", root);

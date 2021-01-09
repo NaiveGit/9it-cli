@@ -434,5 +434,59 @@ revert(char* hash)
 int
 status(void)
 {
+    char* branch_name;
+    Index index;
+    IndexItem index_item;
+    char** unstaged;
+    char** untracked;
+    int ind;
+    char* item;
+    
+    branch_name = get_cur_branch();
+    printf("You are currently on the ~" "\x1b[32m" "%s" "\x1b[0m" "~ branch\n", branch_name); 
+    free(branch_name);
+    
+    index = *read_index();
+    if (index.index_length != 0) {
+        printf("\x1b[33m" "=-=-=-=-=-= Staged files =-=-=-=-=-=\n" "\x1b[0m");
+        printf("  You can unstage any files with 9it unstage <filename>\n");
+    }
+
+    for (int i = 0; i < index.index_length; i++) {
+        index_item = index.index_items[i];
+
+        if (memcmp(index_item.hash, DEL_HASH, SHA_DIGEST_LENGTH) == 0) {
+            printf("\x1b[32m" "\tmodified: %s\n" "\x1b[0m", index_item.file_path);
+        } else {
+            printf("\x1b[32m" "\tdeleted: %s\n" "\x1b[0m", index_item.file_path);
+        }
+
+    }
+
+    /* possibly add an 'added' or 'modified' or 'deleted' indicator for this too */
+    unstaged = compare_index_working();
+    if (unstaged[0] != 0) {
+        printf("\x1b[33m" "=-=-=-=-=-= Tracked files -=-=-=-=-=\n" "\x1b[0m");
+        printf("  You can update tracked files with 9it add <filename>\n");
+    }
+
+    ind = 0;
+    while ((item = unstaged[ind]) != 0) {
+        printf("\x1b[31m" "\t%s\n" "\x1b[0m", item);        
+        ind += 1;
+    }
+
+    /* untracked = get_untracked(); */ 
+    /* if (untracked[0] != 0) { */
+    /*     printf("Untracked files =-=-=-=-=-=\n"); */
+    /*     printf("  You can stage more files with 9it add <filename>\n"); */
+    /* } */
+
+    /* ind = 0; */
+    /* while ((item = untracked[ind]) != 0) { */
+    /*     printf("\x1b[31m" "\t%s\n" "\x1b[0m", item); */        
+    /*     ind += 1; */
+    /* } */
+
     return 0;
 }

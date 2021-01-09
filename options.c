@@ -16,6 +16,7 @@ static error_t parse_init_opt(int key, char* arg, ArgpState* state);
 static error_t parse_log_opt(int key, char* arg, ArgpState* state);
 static error_t parse_restore_opt(int key, char* arg, ArgpState* state);
 static error_t parse_revert_opt(int key, char* arg, ArgpState* state);
+static error_t parse_status_opt(int key, char* arg, ArgpState* state);
 
 static void log_state(ArgpState* state);
 static char* append_argv0(char* str, char* append);
@@ -33,6 +34,7 @@ Commands:\n\
     log\n\
     restore\n\
     revert\n\
+    status\n\
 ";
 static ArgpOption global_options[] = {
     {0}
@@ -158,6 +160,18 @@ Argp revert_argp = {
     revert_doc
 };
 
+/* STATUS subcommand */
+static char status_doc[] = "displays information about the index and tracked files";
+static ArgpOption status_options[] = {
+    {0}
+};
+Argp status_argp = {
+    status_options,
+    parse_status_opt,
+    0,
+    status_doc
+};
+
 static void
 parse_command(char* cmd_name, Argp* argp, ArgpState* state)
 {
@@ -211,6 +225,8 @@ parse_global_opt(int key, char* arg, ArgpState* state)
                 parse_command("restore", &restore_argp, state);
             } else if (strcmp(arg, "revert") == 0) {
                 parse_command("revert", &revert_argp, state);
+            } else if (strcmp(arg, "status") == 0) {
+                parse_command("status", &status_argp, state);
             } else {
                 /* argp_error(state, "%s is not a valid command", arg); */    
                 argp_usage(state);
@@ -400,6 +416,25 @@ parse_revert_opt(int key, char* arg, ArgpState* state)
         case ARGP_KEY_ARG: 
             revert(arg);
             /* state->next = state->argc; */
+            break;
+
+        default:
+            return ARGP_ERR_UNKNOWN;
+    }
+    return 0;
+}
+
+static error_t
+parse_status_opt(int key, char* arg, ArgpState* state)
+{
+    switch (key) {
+
+        case ARGP_KEY_NO_ARGS: 
+            
+            if (state->argc == 1) {
+                status();
+            }
+            
             break;
 
         default:
