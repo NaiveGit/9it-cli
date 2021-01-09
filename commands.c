@@ -281,18 +281,33 @@ cat(char* obj_path)
 int
 checkout(char* branch_name)
 {
+    unsigned char* commit_hash;
     char* branch_path;
+    Index index;
+    Commit commit;
 
-    branch_path = cat_str(2, get_dot_dir(), HEADS_DIR);
+    branch_path = cat_str(3, get_dot_dir(), HEADS_DIR, branch_name);
     if (access(branch_path, F_OK) != 0) {
         printf("Branch %s does not exist\n", branch_name); 
         return -1;
     }
     free(branch_path);
 
+    index = *read_index();
+    if (index.index_length != 0) {
+        printf("You have uncommitted changes, please unstage or commit them before switching branches.\n");
+        return -1;
+    }
+
     write_head_commit(branch_name); 
 
     printf("Switching to branch: %s\n", branch_name);
+
+    commit_hash = get_head_commit();
+    commit.hash = commit_hash;
+    read_commit(&commit);
+
+    revert_commit(commit.root_tree_hash);
 
     return 0;
 }
@@ -479,16 +494,16 @@ status(void)
     }
 
     untracked = get_untracked(); 
-    /* if (untracked[0] != 0) { */
-    /*     printf("Untracked files =-=-=-=-=-=\n"); */
-    /*     printf("  You can stage more files with 9it add <filename>\n"); */
-    /* } */
+    if (untracked[0] != 0) {
+        printf("\x1b[33m" "=-=-=-=-= Untracked files -=-=-=-=\n" "\x1b[0m");
+        printf("  You can stage more files with 9it add <filename>\n");
+    }
 
-    /* ind = 0; */
-    /* while ((item = untracked[ind]) != 0) { */
-    /*     printf("\x1b[31m" "\t%s\n" "\x1b[0m", item); */        
-    /*     ind += 1; */
-    /* } */
+    ind = 0;
+    while ((item = untracked[ind]) != 0) {
+        printf("\x1b[31m" "\t%s\n" "\x1b[0m", item);        
+        ind += 1;
+    }
 
     return 0;
 }

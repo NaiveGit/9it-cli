@@ -761,6 +761,7 @@ write_head_commit(char* branch_name)
     }
 
     fwrite(branch_name, sizeof(char), strlen(branch_name), head_file);
+    write_null(head_file);
     fclose(head_file);
 
     return 0;
