@@ -477,7 +477,7 @@ status(void)
         ind += 1;
     }
 
-    /* untracked = get_untracked(); */ 
+    untracked = get_untracked(); 
     /* if (untracked[0] != 0) { */
     /*     printf("Untracked files =-=-=-=-=-=\n"); */
     /*     printf("  You can stage more files with 9it add <filename>\n"); */

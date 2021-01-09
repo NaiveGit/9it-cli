@@ -22,8 +22,8 @@ char** get_untracked(void);
 int iterate_to(char* file_path, char* hash);
 void iterate_to_helper(Tree* root, char* nextFolder, char* path, int* flag, char* hash);
 int find_index(Index* index, char* name);
-int in_tracked(char** tracked, int num, char* name);
-void get_untracked_helper(char* dir_path, char** objects, int* size);
+int in_tracked(char** tracked, char* name);
+void get_untracked_helper(char* dir_path, char*** objects, int* size);
 // Helper functions:
 int find_child(Tree* root, char* path);
 int file_exists(char* path);
@@ -33,7 +33,7 @@ void repopulate(Tree* root);
 void print_whole_tree(Tree* root);
 int clean_folders(Tree* root);
 char** list_all_objects(unsigned char* commit_hash);
-void list_all_objects_helper(Tree* root,char** objects, int* size);
+void list_all_objects_helper(Tree* root,char*** objpointer, int* size);
 char** list_all_hashes(unsigned char* commit_hash);
 void list_all_hashes_helper(Tree* root,char** objects, int* size);
 Commit* get_previous_commit(char* recent_commit_ptr);
@@ -523,24 +523,25 @@ get_untracked(void)
 {
     char** objects;
     objects = malloc(0);
+    char*** objpointer = &objects;
     int num = 0;
     int* size = &num;
     
     unsigned char* recent_commit_ptr = get_head_commit();
     char** tracked_files = list_all_objects(recent_commit_ptr);
-    get_untracked_helper("",objects,size);
-    objects = realloc(objects,(num+1)*sizeof(char*));
-    objects[num] = 0;
+    get_untracked_helper("",objpointer,size);
+    *objpointer = realloc(*objpointer,(num+1)*sizeof(char*));
+    (*objpointer)[num] = 0;
     num+=1;
 
     char**  untracked;
     untracked = malloc(0);
     int num1 = 0;
     int iterate = 0;
-    while (objects[iterate] != 0) {
-        if (in_tracked(tracked_files,num,objects[iterate]) == 0) {
+    while ((*objpointer)[iterate] != 0) {
+        if (in_tracked(tracked_files,(*objpointer)[iterate]) == 0) {
             untracked = realloc(untracked,(num1+1)*sizeof(char*));
-            untracked[num1] = objects[iterate];
+            untracked[num1] = (*objpointer)[iterate];
             num1+=1;
         }
         iterate+=1;
@@ -553,33 +554,34 @@ get_untracked(void)
 }
 
 int
-in_tracked(char** tracked, int num, char* name) {
-    for (int i = 0; i < num; i++) {
+in_tracked(char** tracked,char* name) {
+    int i = 0;
+    while (tracked[i] != 0) {
         if (strcmp(tracked[i],name) == 0) {
             return 1;
         }
+        i+=1;
     }
     return 0;
 }
 
 void
-get_untracked_helper(char* dir_path, char** objects, int* size)
+get_untracked_helper(char* dir_path, char*** objects, int* size)
 {
+    char* repo_root;
     char* absolute_path;
     DIR* dir;
     Dirent* dirent;
     char* relative_child_path;
 
-    absolute_path = get_repo_root();
-    absolute_path = realloc(absolute_path, strlen(absolute_path)+strlen(dir_path)+1);
-    strcat(absolute_path, dir_path);
-    
+    repo_root = get_repo_root();
+    absolute_path = rcat_str(2, repo_root, dir_path);    
     /* prob need to handle dir_path = "", convert to "." */
     dir = opendir(absolute_path);
     if (dir == NULL) {
         perror("add_index_dir > opendir");
     }
-    free(absolute_path);
+    // free(absolute_path);
 
     while ((dirent = readdir(dir)) != NULL) {
 
@@ -597,13 +599,13 @@ get_untracked_helper(char* dir_path, char** objects, int* size)
             get_untracked_helper(relative_child_path,objects,size);
 
         } else if (dirent->d_type == DT_REG) { // its a normal folder, add it
-            objects = realloc(objects,(*size+1)*(sizeof(char*)));
-            objects[*size] = relative_child_path;
+            *objects = realloc(*objects,(*size+1)*(sizeof(char*)));
+            (*objects)[*size] = relative_child_path;
             *size = *size + 1; 
             
         } // not handling smlinks and other file types
 
-        free(relative_child_path);
+        // free(relative_child_path);
     }
 
     closedir(dir);
@@ -716,35 +718,39 @@ list_all_objects(unsigned char* commit_hash)
 {
     char** objects;
     objects = malloc(0);
-    int num = 0;
-    int* size = &num;
+    char*** objpointer = &objects;
+    // int num = malloc(sizeof(int));
+
+    int* size = malloc(sizeof(int));
+    *size = 0;
     if (NULL != commit_hash) {
         Commit* c = get_previous_commit(commit_hash);
         Tree* root;
         root = malloc(sizeof(Tree));
         duplicate_tree(c->root_tree_hash,"",root);
-        list_all_objects_helper(root,objects,size);
+        list_all_objects_helper(root,objpointer,size);
     }
-    objects = realloc(objects,((*size)+1)*sizeof(char*));
-    objects[*size] = 0;
+    
+    *objpointer = realloc(*objpointer,((*size)+1)*sizeof(char*));
+    (*objpointer)[*size] = 0;
     *size+=1;
-    return objects;
+    return *objpointer;
 }
 
 void
-list_all_objects_helper(Tree* root,char** objects, int* size) {
+list_all_objects_helper(Tree* root,char*** objpointer, int* size) {
     if (root->nodeType == NodeType_blob) {
-        objects = realloc(objects,((*size)+1)*sizeof(char*));
-        objects[*size] = root->name;
+        *objpointer = realloc(*objpointer,((*size)+1)*sizeof(char*));
+        (*objpointer)[*size] = root->name;
         *size +=1;
     }
     else {
         for (int i = 0; i < root->cnum; i++) {
-            list_all_objects_helper(&root->children[i],objects,size);
+            list_all_objects_helper(&root->children[i],objpointer,size);
         }
     }
 }
-
+/*
 char**
 list_all_hashes(unsigned char* commit_hash)
 {
@@ -779,3 +785,4 @@ list_all_hashes_helper(Tree* root,char** objects, int* size) {
     }
 
 }
+*/
