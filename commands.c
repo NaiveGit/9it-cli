@@ -483,7 +483,7 @@ status(void)
     /* possibly add an 'added' or 'modified' or 'deleted' indicator for this too */
     unstaged = compare_index_working();
     if (unstaged[0] != 0) {
-        printf("\x1b[33m" "=-=-=-=-=-= Tracked files -=-=-=-=-=\n" "\x1b[0m");
+        printf("\x1b[33m" "=-=-=-=-=- Unstaged files -=-=-=-=-=\n" "\x1b[0m");
         printf("  You can update tracked files with 9it add <filename>\n");
     }
 
@@ -495,15 +495,25 @@ status(void)
 
     untracked = get_untracked(); 
     if (untracked[0] != 0) {
-        printf("\x1b[33m" "=-=-=-=-= Untracked files -=-=-=-=\n" "\x1b[0m");
+        printf("\x1b[33m" "=-=-=-=-=- Untracked files =-=-=-=-=\n" "\x1b[0m");
         printf("  You can stage more files with 9it add <filename>\n");
     }
 
     ind = 0;
     while ((item = untracked[ind]) != 0) {
-        printf("\x1b[31m" "\t%s\n" "\x1b[0m", item);        
+
+        if (file_in_index(item) == 0) {
+            printf("\x1b[31m" "\t%s\n" "\x1b[0m", item);        
+        } 
         ind += 1;
     }
 
+    return 0;
+}
+
+int
+unstage(char* local_path)
+{
+    remove_index(local_path);
     return 0;
 }

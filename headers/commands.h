@@ -16,5 +16,6 @@ extern int log_horizon(void);
 extern int restore(char* local_path);
 extern int revert(char* hash);
 extern int status(void);
+extern int unstage(char* local_path);
 
 #endif

@@ -17,6 +17,7 @@ static error_t parse_log_opt(int key, char* arg, ArgpState* state);
 static error_t parse_restore_opt(int key, char* arg, ArgpState* state);
 static error_t parse_revert_opt(int key, char* arg, ArgpState* state);
 static error_t parse_status_opt(int key, char* arg, ArgpState* state);
+static error_t parse_unstage_opt(int key, char* arg, ArgpState* state);
 
 static void log_state(ArgpState* state);
 static char* append_argv0(char* str, char* append);
@@ -35,6 +36,7 @@ Commands:\n\
     restore\n\
     revert\n\
     status\n\
+    unstage\n\
 ";
 static ArgpOption global_options[] = {
     {0}
@@ -172,6 +174,18 @@ Argp status_argp = {
     status_doc
 };
 
+/* UNSTAGE subcommand */
+static char unstage_doc[] = "removes items from the index";
+static ArgpOption unstage_options[] = {
+    {0}
+};
+Argp unstage_argp = {
+    unstage_options,
+    parse_unstage_opt,
+    0,
+    unstage_doc
+};
+
 static void
 parse_command(char* cmd_name, Argp* argp, ArgpState* state)
 {
@@ -227,6 +241,8 @@ parse_global_opt(int key, char* arg, ArgpState* state)
                 parse_command("revert", &revert_argp, state);
             } else if (strcmp(arg, "status") == 0) {
                 parse_command("status", &status_argp, state);
+            } else if (strcmp(arg, "unstage") == 0) {
+                parse_command("unstage", &unstage_argp, state);
             } else {
                 /* argp_error(state, "%s is not a valid command", arg); */    
                 argp_usage(state);
@@ -435,6 +451,21 @@ parse_status_opt(int key, char* arg, ArgpState* state)
                 status();
             }
             
+            break;
+
+        default:
+            return ARGP_ERR_UNKNOWN;
+    }
+    return 0;
+}
+
+static error_t
+parse_unstage_opt(int key, char* arg, ArgpState* state)
+{
+    switch (key) {
+        
+        case ARGP_KEY_ARG: 
+            unstage(arg);
             break;
 
         default:
