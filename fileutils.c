@@ -283,11 +283,12 @@ rcat_str(int num, char* first, ...) // resizes
 
     length = strlen(first);
     first = realloc(first, length+1);
+    first[length] = 0;
 
     for (int i = 0; i < num; i++) {
         cur = va_arg(args, char*);
         length += strlen(cur);
-        first = realloc(first, length);
+        first = realloc(first, length+1);
         strcat(first, cur);
     }
 

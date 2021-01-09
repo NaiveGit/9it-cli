@@ -402,15 +402,15 @@ was_file_deleted(char* file_path)
 int // take in path relative to repo root
 add_index_dir(char* dir_path)
 {  // maybe check that dir_path is an acc dir
+    char* repo_root;
     char* absolute_path;
     DIR* dir;
     Dirent* dirent;
     char* relative_child_path;
 
-    absolute_path = get_repo_root();
-    absolute_path = realloc(absolute_path, strlen(absolute_path)+strlen(dir_path)+1);
-    strcat(absolute_path, dir_path);
-    
+    repo_root = get_repo_root();
+    absolute_path = rcat_str(2, repo_root, dir_path);
+
     /* prob need to handle dir_path = "", convert to "." */
     dir = opendir(absolute_path);
     if (dir == NULL) {

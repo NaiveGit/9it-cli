@@ -60,6 +60,7 @@ add(char* local_path)
     /* make local_path relative to repo root */
     relative_path = get_local_path();
     relative_path = rcat_str(2, relative_path, local_path);
+    printf("relative path%s\n", relative_path);
 
     /* check if dir or file */
     if (lstat(local_path, &file_stat) == -1) {
