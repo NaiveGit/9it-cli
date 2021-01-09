@@ -60,7 +60,6 @@ add(char* local_path)
     /* make local_path relative to repo root */
     relative_path = get_local_path();
     relative_path = rcat_str(2, relative_path, local_path);
-    printf("relative path%s\n", relative_path);
 
     /* check if dir or file */
     if (lstat(local_path, &file_stat) == -1) {
@@ -123,6 +122,7 @@ int
 branch(char* branch_name)
 { // create new branch
     char* new_branch_path;
+    unsigned char* head_commit;
 
     new_branch_path = cat_str(3, get_dot_dir(), HEADS_DIR, branch_name);
     /* check to see if branch was created already */
@@ -132,7 +132,8 @@ branch(char* branch_name)
     }
 
     /* create new branch file */
-    write_to_file(new_branch_path, "", 0);
+    head_commit = get_head_commit();
+    write_to_file(new_branch_path, head_commit, SHA_DIGEST_LENGTH);
     free(new_branch_path);
 
     return 0;
@@ -457,9 +458,9 @@ status(void)
         index_item = index.index_items[i];
 
         if (memcmp(index_item.hash, DEL_HASH, SHA_DIGEST_LENGTH) == 0) {
-            printf("\x1b[32m" "\tmodified: %s\n" "\x1b[0m", index_item.file_path);
-        } else {
             printf("\x1b[32m" "\tdeleted: %s\n" "\x1b[0m", index_item.file_path);
+        } else {
+            printf("\x1b[32m" "\tmodified: %s\n" "\x1b[0m", index_item.file_path);
         }
 
     }

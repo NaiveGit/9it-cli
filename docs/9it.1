@@ -45,10 +45,16 @@ Initialize a new 9it repository in the current working directory. By default, th
 Dumps the contents of the .9it directory into the current directory. This option is mostly used on the server side.
 .SS log
 Prints out the commit history of the current branch starting with the latest.
+.SS restore
+.TP
+<\fIFILE-NAME\fP>
+Removes files from the index.
 .SS revert
 .TP
 <\fICOMMIT-HASH\fR>
 Creates a revert commit in the current branch with contents of the desired commit in history. The full hash must be passed in, so consider using \fB9it log\fR, to copy and paste the hash.
+.SS status
+Displays information on staged, unstaged and untracked files.
 .SH FILES/DIRECTORY STRUCTURE
 If 9it was initialized without the bare option, then 9it will create a hidden .9it directory inside the current working directory, which contains all the files required.
 Generally, the user does not need to worry about the contents of this directory, but an explanation is included here nonetheless.

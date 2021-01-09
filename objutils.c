@@ -345,7 +345,14 @@ add_index_item(char* file_path)
     hash = hash_stream(file_stream);
     fclose(file_stream);
 
+    /* if it's already in index, update it*/
+    if (file_in_index(file_path)) {
+        remove_index(file_path);
+    }
+
     append_index(file_path);
+
+
     /* switch (iterate_to(file_path, hash)) { */
     /*     case 0: // does not exist */
     /*         // always add to index */
@@ -709,6 +716,25 @@ read_index(void)
     memcpy(return_index, &index, sizeof(Index));
 
     return return_index;
+}
+
+int
+file_in_index(char* local_path)
+{
+    Index index;
+    IndexItem index_item;
+
+    index = *read_index();
+
+    for (int i = 0; i < index.index_length; i++) {
+        index_item = index.index_items[i];
+
+        if (strcmp(local_path, index_item.file_path) == 0) {
+            return 1;
+        }
+    }
+
+    return 0;
 }
 
 unsigned char*

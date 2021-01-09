@@ -89,6 +89,7 @@ extern int write_index(Index* index);
 extern int clear_index(void);
 extern int clear_temp(void);
 extern Index* read_index(void);
+extern int file_in_index(char* local_path);
 
 /* ref / head related */
 extern unsigned char* get_head_commit(void);
