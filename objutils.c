@@ -345,26 +345,27 @@ add_index_item(char* file_path)
     hash = hash_stream(file_stream);
     fclose(file_stream);
 
-    switch (iterate_to(file_path, hash)) {
-        case 0: // does not exist
-            // always add to index
-            append_index(file_path);
-            break;
+    append_index(file_path);
+    /* switch (iterate_to(file_path, hash)) { */
+    /*     case 0: // does not exist */
+    /*         // always add to index */
+    /*         append_index(file_path); */
+    /*         break; */
 
-        case 1: // exists and did not change
-            // always remove from index
-            printf("exists and did not change\n");
-            break;
+    /*     case 1: // exists and did not change */
+    /*         // always remove from index */
+    /*         printf("exists and did not change\n"); */
+    /*         break; */
 
-        case 2: // exists and change
-            // always replace item from index
-            printf("exists and changed\n");
-            break;
+    /*     case 2: // exists and change */
+    /*         // always replace item from index */
+    /*         printf("exists and changed\n"); */
+    /*         break; */
 
-        default:
-            printf("add_index_item, iterate_to() returned invalid value\n");
-            return -1;
-    }
+    /*     default: */
+    /*         printf("add_index_item, iterate_to() returned invalid value\n"); */
+    /*         return -1; */
+    /* } */
 
     free(hash);
 
@@ -449,36 +450,19 @@ add_index_dir(char* dir_path)
 int
 append_index(char* file_path)
 {
+    Index index;
+    IndexItem index_item;
     char* absolute_path;
-    char* out_path;
-    FILE* index_file;
-    FILE* file_stream;
-    int index_header_entries;
-    unsigned char* hash;
     Stat file_stat;
-    
-    /* build the binary */
-    out_path = cat_str(2, get_dot_dir(), INDEX_FILE);
-    index_file = fopen(out_path, "r+b");
-    if (index_file == NULL) {
-        perror("append_index > fopen");
-        return -1;
-    }
-    free(out_path);
 
-    /* increment number of index entries in header */
-    fseek(index_file, HEADER_ENTRY_NUM_START, SEEK_SET);
-    fread(&index_header_entries, HEADER_ENTRY_NUM_LENGTH, 1, index_file);
-    index_header_entries += 1;
-    fseek(index_file, HEADER_ENTRY_NUM_START, SEEK_SET);
-    fwrite(&index_header_entries, HEADER_ENTRY_NUM_LENGTH, 1, index_file);
-
-    /* append new binary to end of index */
-    fseek(index_file, 0, SEEK_END);
+    index = *read_index();
 
     /* grab file stats */
     absolute_path = rcat_str(2, get_repo_root(), file_path);
     if (was_file_deleted(absolute_path) == 0) {
+
+        FILE* file_stream;
+        unsigned char* hash;
 
         if (lstat(absolute_path, &file_stat) == -1) {
             perror("append_index > lstat");
@@ -488,38 +472,46 @@ append_index(char* file_path)
         file_stream = fopen(file_path, "rb");
         hash = hash_stream(file_stream);
         fclose(file_stream);
-        
-        fwrite(&file_stat.st_ctime, sizeof(time_t), 1, index_file);
-        fwrite(&file_stat.st_mtime, sizeof(time_t), 1, index_file);
-        fwrite(&file_stat.st_dev, sizeof(uint32_t), 1, index_file);
-        fwrite(&file_stat.st_ino, sizeof(uint32_t), 1, index_file);
-        fwrite(&file_stat.st_mode, sizeof(uint32_t), 1, index_file);
-        fwrite(&file_stat.st_uid, sizeof(uint32_t), 1, index_file);
-        fwrite(&file_stat.st_gid, sizeof(uint32_t), 1, index_file);
-        fwrite(&file_stat.st_size, sizeof(uint32_t), 1, index_file);
-        write_hash(index_file, hash);
-        fwrite(file_path, 1, strlen(file_path), index_file);
-        write_null(index_file); // index entry ends with null character
 
-        free(hash);
+        index_item.c_time = file_stat.st_ctime;
+        index_item.m_time = file_stat.st_mtime;
+        index_item.dev = file_stat.st_dev;
+        index_item.ino = file_stat.st_ino;
+        index_item.mode = file_stat.st_mode;
+        index_item.uid = file_stat.st_uid;
+        index_item.gid = file_stat.st_gid;
+        index_item.file_size = file_stat.st_size;
+        index_item.hash = hash;
+        index_item.file_path = file_path;
 
         /* write to temp folder */
         write_blob(absolute_path);
 
     } else {
         
-        int nullblock = 2*sizeof(time_t)+6*sizeof(uint32_t);
-        for (int i = 0; i < nullblock; i++) {
-            write_null(index_file);
-        }
-        write_hash(index_file, DEL_HASH);
-        fwrite(file_path, 1, strlen(file_path), index_file);
-        write_null(index_file); // index entry ends with null character
+        index_item.c_time = 0;
+        index_item.m_time = 0;
+        index_item.dev = 0;
+        index_item.ino = 0;
+        index_item.mode = 0;
+        index_item.uid = 0;
+        index_item.gid = 0;
+        index_item.file_size = 0;
+        index_item.hash = DEL_HASH;
+        index_item.file_path = file_path;
 
     }
 
+    /* add new entry to index struct */
+    index.index_length += 1;
+    index.index_items = realloc(index.index_items, sizeof(IndexItem)*index.index_length);
+    index.index_items[index.index_length-1] = index_item;
+
+    /* write the index */
+    write_index(&index);
+
+    /* clean up */
     free(absolute_path);
-    fclose(index_file);
 
     return 0;
 }
@@ -543,20 +535,69 @@ remove_index(char* file_path)
         }
     }
     
-    /* nothing to remove */
-    if (item_ind == -1) {
-        return 0;
+    if (item_ind == -1 || index.index_length == 0) {
+        printf("Failed to unstage file: %s\n", file_path);
+        return -1;
+
+    } else if (index.index_length == 1) {
+        index.index_length = 0;
+        index.index_items = realloc(index.index_items, 0);
+
+    } else {
+        /* swap the desired element with the last element */
+        temp = index.index_items[index.index_length-1];
+        index.index_items[index.index_length-1] = index.index_items[item_ind];
+        index.index_items[item_ind] = temp;
+        
+        index.index_length -= 1;
+        index.index_items = realloc(index.index_items, sizeof(IndexItem)*(index.index_length));
+
     }
 
-    /* swap the desired element with the last element */
-    temp = index.index_items[index.index_length-1];
-    index.index_items[index.index_length-1] = index.index_items[item_ind];
-    index.index_items[item_ind] = temp;
-    index.index_items = realloc(index.index_items, sizeof(IndexItem)*(index.index_length-1));
-
-    index.index_length -= 1;
-
     /* rewrite to index */
+    write_index(&index);
+
+    return 0;
+}
+
+int
+write_index(Index* index)
+{
+    char* out_path;
+    FILE* index_file;
+    IndexItem index_item;
+
+    out_path = cat_str(2, get_dot_dir(), INDEX_FILE);
+    index_file = fopen(out_path, "wb");
+    if (index_file == NULL) {
+        perror("write_index > fopen");
+        return -1;
+    }
+    free(out_path);
+
+    /* write the header */
+    fwrite(INDEX_DEFAULT_HEADER, sizeof(char), HEADER_LENGTH, index_file);
+    fseek(index_file, HEADER_ENTRY_NUM_START, SEEK_SET);
+    fwrite(&index->index_length, HEADER_ENTRY_NUM_LENGTH, 1, index_file);
+
+    for (int i = 0; i < index->index_length; i++) {
+        index_item = index->index_items[i];
+
+        fwrite(&index_item.c_time, sizeof(time_t), 1, index_file);
+        fwrite(&index_item.m_time, sizeof(time_t), 1, index_file);
+        fwrite(&index_item.dev, sizeof(uint32_t), 1, index_file);
+        fwrite(&index_item.ino, sizeof(uint32_t), 1, index_file);
+        fwrite(&index_item.mode, sizeof(uint32_t), 1, index_file);
+        fwrite(&index_item.uid, sizeof(uint32_t), 1, index_file);
+        fwrite(&index_item.gid, sizeof(uint32_t), 1, index_file);
+        fwrite(&index_item.file_size, sizeof(uint32_t), 1, index_file);
+        write_hash(index_file, index_item.hash);
+        fwrite(index_item.file_path, 1, strlen(index_item.file_path), index_file);
+        write_null(index_file); // index entry ends with null character
+
+    }
+
+    fclose(index_file);
 
     return 0;
 }

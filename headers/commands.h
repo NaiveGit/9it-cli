@@ -13,6 +13,7 @@ extern int cat(char* obj_path);
 extern int checkout(char* branch_name);
 extern int commit(char* commit_msg);
 extern int log_horizon(void);
+extern int restore(char* local_path);
 extern int revert(char* hash);
 extern int status(void);
 

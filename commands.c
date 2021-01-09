@@ -368,6 +368,22 @@ log_horizon(void)
 }
 
 int
+restore(char* local_path)
+{ 
+    char* relative_path;
+
+    /* make local_path relative to repo root */
+    relative_path = get_local_path();
+    relative_path = rcat_str(2, relative_path, local_path);
+
+    remove_index(relative_path);
+
+    free(relative_path);
+
+    return 0;
+}
+
+int
 revert(char* hash)
 {
     unsigned char* commit_hash;

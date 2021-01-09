@@ -85,6 +85,7 @@ extern int add_index_item(char* file_path);
 extern int add_index_dir(char* file_path);
 extern int append_index(char* file_path);
 extern int remove_index(char* file_path);
+extern int write_index(Index* index);
 extern int clear_index(void);
 extern int clear_temp(void);
 extern Index* read_index(void);

@@ -14,6 +14,7 @@ static error_t parse_checkout_opt(int key, char* arg, ArgpState* state);
 static error_t parse_commit_opt(int key, char* arg, ArgpState* state);
 static error_t parse_init_opt(int key, char* arg, ArgpState* state);
 static error_t parse_log_opt(int key, char* arg, ArgpState* state);
+static error_t parse_restore_opt(int key, char* arg, ArgpState* state);
 static error_t parse_revert_opt(int key, char* arg, ArgpState* state);
 
 static void log_state(ArgpState* state);
@@ -30,6 +31,7 @@ Commands:\n\
     commit\n\
     init\n\
     log\n\
+    restore\n\
     revert\n\
 ";
 static ArgpOption global_options[] = {
@@ -132,6 +134,18 @@ Argp log_argp = {
     log_doc
 };
 
+/* RESTORE subcommand */
+static char restore_doc[] = "restores lol";
+static ArgpOption restore_options[] = {
+    {0}
+};
+Argp restore_argp = {
+    restore_options,
+    parse_restore_opt,
+    0,
+    restore_doc
+};
+
 /* REVERT subcommand */
 static char revert_doc[] = "reverts lol";
 static ArgpOption revert_options[] = {
@@ -193,6 +207,8 @@ parse_global_opt(int key, char* arg, ArgpState* state)
                 parse_command("init", &init_argp, state);
             } else if (strcmp(arg, "log") == 0) {
                 parse_command("log", &log_argp, state);
+            } else if (strcmp(arg, "restore") == 0) {
+                parse_command("restore", &restore_argp, state);
             } else if (strcmp(arg, "revert") == 0) {
                 parse_command("revert", &revert_argp, state);
             } else {
@@ -353,6 +369,21 @@ parse_log_opt(int key, char* arg, ArgpState* state)
                 log_horizon();
             }
             
+            break;
+
+        default:
+            return ARGP_ERR_UNKNOWN;
+    }
+    return 0;
+}
+
+static error_t
+parse_restore_opt(int key, char* arg, ArgpState* state)
+{
+    switch (key) {
+
+        case ARGP_KEY_ARG: 
+            restore(arg);
             break;
 
         default:
