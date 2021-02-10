@@ -24,12 +24,13 @@ wget https://files.danieliu.xyz/repos/makepkg/9it-cli/PKGBUILD
 makepkg -si
 ```
 
-#### deb - (deb, ubuntu, mint etc)
+#### deb (deb, ubuntu, mint etc)
 
 The .deb file is available [here](https://files.danieliu.xyz/repos/apt/9it-cli/9it-cli_1.0-1.deb). The full install is quite simple:
 ```
 wget https://files.danieliu.xyz/repos/apt/9it-cli/9it-cli_1.0-1.deb
 sudo dpkg -i 9it-cli_1.0-1.deb
+sudo apt-get install -f
 ```
 
 #### ebuild (gentoo) - coming soon
