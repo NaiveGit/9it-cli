@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-pipe -O2 -Wall
 LIBS=-lcrypto -lz
-PREFIX=/usr/local
+PREFIX=/usr
 MANPREFIX=$(PREFIX)/share/man
 
 make: 9it
