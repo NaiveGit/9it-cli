@@ -14,7 +14,7 @@ Pushing and fetching from remotes is not built in, merging has also not been imp
 
 ### INSTALLATION
 
-#### PKGBUILD (arch based)
+#### pkgbuild (arch, artix, manjaro etc)
 
 Not in AUR yet (and not sure if it will ever be), but you can get the pkgbuild from [here](https://files.danieliu.xyz/repos/makepkg/9it-cli/PKGBUILD). The entire install process is as follows:
 ```
@@ -24,7 +24,13 @@ wget https://files.danieliu.xyz/repos/makepkg/9it-cli/PKGBUILD
 makepkg -si
 ```
 
-#### apt - coming soon
+#### deb - (deb, ubuntu, mint etc)
+
+The .deb file is available [here](https://files.danieliu.xyz/repos/apt/9it-cli/9it-cli_1.0-1.deb). The full install is quite simple:
+```
+wget https://files.danieliu.xyz/repos/apt/9it-cli/9it-cli_1.0-1.deb
+sudo dpkg -i 9it-cli_1.0-1.deb
+```
 
 #### ebuild (gentoo) - coming soon
 
