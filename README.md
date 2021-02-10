@@ -1,8 +1,9 @@
-## 9it
+## 9it - Version Control System
 
 Totally not git! 9it is actually what we like to call a 'single-player' version control system. It has most of the basic functionality of git minus pushing and pulling. Thus, it is lightweight and intended for individual use. Keep in mind that this project was developed as a learning experience and not intended for everyday use, thus bugs and potential data loss are a possibility.
 
 ### USAGE
+
 Please read the man page that comes installed or pass in the help flag for usage.
 
 ### FEATURES / NON-FEATURES
@@ -13,11 +14,19 @@ Pushing and fetching from remotes is not built in, merging has also not been imp
 
 ### INSTALLATION
 
-#### AUR (coming soon)
+#### PKGBUILD (arch based)
 
-#### apt (coming soon)
+Not in AUR yet (and not sure if it will ever be), but you can get the pkgbuild from [here](https://files.danieliu.xyz/repos/makepkg/9it-cli/PKGBUILD). The entire install process is as follows:
+```
+mkdir 9it-cli
+cd 9it-cli
+wget https://files.danieliu.xyz/repos/makepkg/9it-cli/PKGBUILD
+makepkg -si
+```
 
-#### ebuild (coming soon)
+#### apt - coming soon
+
+#### ebuild (gentoo) - coming soon
 
 #### Build from Source
 Simply clone the repository:
@@ -28,5 +37,5 @@ And install using make:
 ```
 make && sudo make clean install
 ```
-The binary is installed to /usr/local in addition to man pages at /usr/local/man.
+The binary is installed to /usr/bin in addition to man pages at /usr/share/man.
 
